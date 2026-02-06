@@ -1,0 +1,439 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: transparent;
+    padding: 1.5rem 0;
+    transition: all 0.3s ease;
+    border-bottom: none;
+}
+
+.navbar.scrolled {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.nav-logo-img {
+    height: 70px;
+    /* Increased logo size */
+    display: block;
+    filter: brightness(0) invert(1);
+    /* Converts any color to white */
+    width: auto;
+}
+
+/* Menu Links */
+.nav-links {
+    gap: 2rem;
+    /* Increased gap */
+    display: none;
+    /* Hidden on mobile */
+}
+
+@media (min-width: 992px) {
+    .nav-links {
+        display: flex;
+    }
+}
+
+.nav-links a {
+    font-size: 1rem;
+    /* Increased font size */
+    color: #e2e8f0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0;
+    transition: all 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--color-brand-red);
+}
+
+.nav-link.active {
+    color: var(--color-brand-red) !important;
+}
+
+
+/* Icons */
+.nav-actions {
+    display: none;
+    /* Hidden on mobile */
+    gap: 1rem;
+}
+
+@media (min-width: 992px) {
+    .nav-actions {
+        display: flex;
+    }
+}
+
+.social-icon {
+    color: #fff;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+/* Brand-specific hover colors */
+.facebook-icon:hover {
+    color: #1877f2;
+}
+
+.instagram-icon:hover {
+    color: #e4405f;
+}
+
+.youtube-icon:hover {
+    color: #ff0000;
+}
+
+/* Mobile Toggle */
+.mobile-toggle {
+    display: block;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+@media (min-width: 992px) {
+    .mobile-toggle {
+        display: none;
+    }
+}
+
+/* Mobile Menu Container */
+.mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #000;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    text-align: center;
+    max-height: calc(100vh - 80px);
+    /* Adjust based on navbar height */
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-menu a {
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem;
+    transition: all 0.2s;
+}
+
+.mobile-menu a:hover,
+.mobile-menu a.active {
+    color: var(--color-brand-red);
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-nav-link {
+    background: none;
+    border: none;
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link.active {
+    color: var(--color-brand-red);
+}
+
+.mobile-submenu {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0;
+}
+
+.mobile-submenu a {
+    font-size: 0.95rem !important;
+    padding: 0.6rem !important;
+    opacity: 0.8;
+}
+
+.mobile-submenu a:hover,
+.mobile-submenu a.active {
+    opacity: 1;
+}
+
+.mobile-actions {
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+}
+
+.mobile-cart-icon-btn {
+    color: #e2e8f0;
+    padding: 0.5rem !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-cart-icon-btn.active {
+    color: var(--color-brand-red) !important;
+}
+
+.mobile-socials {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.navbar-light .mobile-actions {
+    border-top-color: rgba(0, 0, 0, 0.05);
+}
+
+.navbar-light .mobile-cart-icon-btn {
+    color: var(--color-primary);
+}
+
+.navbar-light .mobile-socials .social-icon {
+    color: var(--color-primary);
+}
+
+/* Transparent navbar with dark text (for light backgrounds without heros) */
+.navbar-dark-text .nav-logo-img {
+    filter: none;
+}
+
+.navbar-dark-text .brand-logo,
+.navbar-dark-text .nav-links a,
+.navbar-dark-text .social-icon,
+.navbar-dark-text .mobile-toggle,
+.navbar-dark-text .nav-link,
+.navbar-dark-text .nav-cart-action a {
+    color: var(--color-primary);
+}
+
+.navbar-dark-text .nav-links a:hover,
+.navbar-dark-text .nav-link:hover {
+    color: var(--color-brand-red);
+}
+
+/* Light Navbar Variant */
+.navbar-light {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-light .nav-logo-img {
+    filter: none;
+    /* Show original logo color */
+}
+
+.navbar-light .brand-logo {
+    color: var(--color-primary);
+}
+
+.navbar-light .nav-links a {
+    color: var(--color-primary);
+}
+
+.navbar-light .nav-links a:hover {
+    color: var(--color-brand-red);
+}
+
+.navbar-light .social-icon {
+    color: var(--color-primary);
+}
+
+.navbar-light .mobile-toggle {
+    color: var(--color-primary);
+}
+
+.navbar-light .mobile-menu {
+    background: #fff;
+}
+
+.navbar-light .mobile-menu a {
+    color: var(--color-primary);
+}
+
+
+/* Dropdown Menu Styles */
+.nav-item.dropdown {
+    position: relative;
+    cursor: pointer;
+}
+
+.nav-link {
+    font-size: 1rem;
+    color: #e2e8f0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav-link:hover,
+.nav-item.dropdown:hover .nav-link {
+    color: var(--color-brand-red);
+}
+
+.dropdown-icon {
+    transition: transform 0.3s;
+}
+
+.nav-item.dropdown:hover .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #fff;
+    min-width: 200px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-item.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-menu a {
+    color: var(--color-primary);
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    text-transform: capitalize;
+    /* Or uppercase if preferred */
+    border-bottom: none;
+    letter-spacing: normal;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu a.active {
+    background: #f8fafc;
+    color: var(--color-brand-red);
+    transform: translateX(4px);
+    border-bottom: none;
+}
+
+/* Light Navbar Adjustments for Dropdown */
+.navbar-light .nav-link {
+    color: var(--color-primary);
+}
+
+.navbar-light .nav-link:hover,
+
+/* Utility */
+.relative {
+    position: relative;
+}
+
+/* Cart Styling */
+.nav-cart-action {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-cart-action a {
+    color: #fff;
+    transition: color 0.3s ease;
+    display: flex;
+    /* Ensure icon is centered vertically if needed */
+}
+
+.nav-cart-action a:hover {
+    color: var(--color-brand-red);
+}
+
+.nav-cart-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--color-brand-red);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-light .nav-cart-action a {
+    color: var(--color-primary);
+}
+
+.navbar-light .nav-cart-action a:hover {
+    color: var(--color-brand-red);
+}

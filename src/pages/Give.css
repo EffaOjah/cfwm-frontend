@@ -1,0 +1,394 @@
+.give-page {
+    background: var(--color-bg-light);
+    padding-top: 0;
+}
+
+/* Hero Section */
+.give-hero {
+    min-height: 80vh;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding-top: 80px;
+    /* Navbar overlap */
+}
+
+.give-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
+    z-index: 1;
+}
+
+.give-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+}
+
+.hero-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    padding: 0.5rem 1.5rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.give-hero h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+}
+
+.give-hero p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Ways To Give */
+.ways-to-give {
+    padding: 6rem 0;
+    background: #fff;
+}
+
+.section-header {
+    margin-bottom: 4rem;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.section-header p {
+    color: var(--color-secondary);
+    font-size: 1.1rem;
+}
+
+.giving-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.give-card {
+    background: #f8fafc;
+    padding: 2.5rem;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.give-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-brand-red);
+}
+
+.give-card.featured {
+    background: linear-gradient(135deg, #fff, #fff5f5);
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    /* Enhance shadow to compensate */
+}
+
+.card-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--color-brand-red);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+}
+
+.icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-brand-red);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.logo-wrapper {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.platform-logo {
+    max-height: 40px;
+    max-width: 150px;
+    object-fit: contain;
+}
+
+.give-card h3 {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.give-card p {
+    color: var(--color-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.bank-details,
+.ussd-code {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+    font-family: monospace;
+    color: var(--color-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ussd-code {
+    font-size: 1.2rem;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-style: solid;
+    border-color: #e2e8f0;
+}
+
+.btn-link {
+    color: var(--color-brand-red);
+    font-weight: 700;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    font-size: 0.95rem;
+    transition: gap 0.2s;
+}
+
+.btn-link:hover {
+    gap: 0.75rem;
+}
+
+/* Impact Section */
+.impact-section {
+    padding: 6rem 0;
+    background: linear-gradient(to right, #f8fafc 50%, #fff 50%);
+}
+
+.impact-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.impact-image {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.impact-image img {
+    width: 100%;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.impact-image:hover img {
+    transform: scale(1.05);
+}
+
+.impact-stat {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    color: var(--color-brand-red);
+    width: 40px;
+    height: 40px;
+}
+
+.impact-stat strong {
+    display: block;
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    line-height: 1;
+}
+
+.impact-stat span {
+    font-size: 0.85rem;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.impact-content h2 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+}
+
+.impact-content .lead {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #475569;
+    margin-bottom: 1.5rem;
+}
+
+.impact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.impact-list li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.05rem;
+    color: var(--color-primary);
+}
+
+.check-icon {
+    width: 24px;
+    height: 24px;
+    background: #dcfce7;
+    /* Light green */
+    color: #16a34a;
+    /* Green */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+/* Scripture Banner */
+.scripture-banner {
+    background: var(--color-primary);
+    padding: 4rem 0;
+    text-align: center;
+    color: #fff;
+}
+
+.scripture-banner blockquote {
+    font-size: 1.8rem;
+    font-weight: 300;
+    font-style: italic;
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: serif;
+}
+
+.scripture-banner cite {
+    display: block;
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    opacity: 0.8;
+    font-weight: 600;
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+@media (max-width: 992px) {
+    .give-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .impact-section {
+        background: #f8fafc;
+    }
+
+    .impact-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .impact-image {
+        order: -1;
+    }
+}
+
+/* Payment Specific Styles */
+.btn-blue {
+    background: #0070ba;
+    /* PayPal Blue */
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-blue:hover {
+    background: #005ea6;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 1rem 0;
+}

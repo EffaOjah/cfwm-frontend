@@ -1,0 +1,206 @@
+.section-testimony {
+    background-color: #f8fafc;
+    /* Light Theme (Slate-50) */
+    padding: 6rem 0;
+    color: #0f172a;
+    /* Dark Navy Text */
+    position: relative;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.testimony-header {
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.testimony-label {
+    color: var(--color-brand-red);
+    /* Brand Red */
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.testimony-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #0f172a;
+    /* Dark Text */
+    margin-bottom: 1.5rem;
+}
+
+.testimony-divider {
+    width: 60px;
+    height: 4px;
+    background-color: var(--color-brand-red);
+    /* Brand Red */
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+}
+
+.testimony-desc {
+    color: var(--color-secondary);
+    /* Slate */
+    font-size: 1.1rem;
+    max-width: 600px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.testimony-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.testimony-card {
+    background: #fff;
+    /* White Cards */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 2.5rem;
+    border-radius: 1rem;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.testimony-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(234, 28, 36, 0.2);
+    /* Red tint on hover */
+}
+
+.quote-icon-wrapper {
+    margin-bottom: 1.5rem;
+    color: var(--color-brand-red);
+    /* Brand Red */
+    opacity: 0.2;
+}
+
+.testimony-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #334155;
+    /* Slate-700 */
+    margin-bottom: 2rem;
+    font-style: italic;
+}
+
+.testimony-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.author-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-brand-red);
+    /* Brand Red */
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    /* Dark Text */
+}
+
+.author-role {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.testimony-footer {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-outline-gold {
+    background: transparent;
+    border: 2px solid var(--color-brand-red);
+    /* Brand Red */
+    color: var(--color-brand-red);
+    padding: 1rem 2.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-outline-gold:hover {
+    background: var(--color-brand-red);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(234, 28, 36, 0.4);
+}
+
+.me-3 {
+    margin-right: 0;
+    /* Handled by gap on parent now */
+}
+
+/* Ensure pill button style is available locally if not global yet, or use specific style */
+.btn-red-pill {
+    background-color: var(--color-brand-red);
+    color: #fff;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.btn-red-pill:hover {
+    background-color: #c4121a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(234, 28, 36, 0.4);
+    color: #fff;
+}
+
+.btn-outline-red {
+    background: transparent;
+    border: 2px solid var(--color-brand-red);
+    /* Brand Red */
+    color: var(--color-brand-red);
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.btn-outline-red:hover {
+    background: var(--color-brand-red);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(234, 28, 36, 0.4);
+}

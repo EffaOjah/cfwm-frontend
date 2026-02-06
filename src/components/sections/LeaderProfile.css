@@ -1,0 +1,67 @@
+.section-leader {
+    background-color: #111;
+    /* Rich Dark Charcoal matching the site's dark theme */
+    padding: 6rem 0;
+    color: #fff;
+}
+
+.leader-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+@media (min-width: 992px) {
+    .leader-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.leader-role {
+    color: var(--color-accent);
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.leader-name {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+}
+
+.leader-bio {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.8;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    max-width: 500px;
+}
+
+.leader-link {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    font-weight: 600;
+}
+
+.leader-link:hover {
+    color: var(--color-accent);
+}
+
+.leader-image-wrapper {
+    position: relative;
+}
+
+.leader-img {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    margin-left: auto;
+    display: block;
+}

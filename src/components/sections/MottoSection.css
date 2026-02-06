@@ -1,0 +1,63 @@
+.section-motto {
+    background: linear-gradient(135deg, var(--color-brand-red) 0%, #7f1d1d 100%);
+    /* Brand Red to Deep Red */
+    padding: 8rem 0;
+    color: #ffffff;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.center-text {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.quote-tag {
+    display: block;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 2rem;
+    font-weight: 600;
+}
+
+.quote-text {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 2rem;
+    color: #ffffff;
+    font-family: var(--font-heading);
+}
+
+.quote-author {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Subtle background pattern */
+.section-motto::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .quote-text {
+        font-size: 1.8rem;
+    }
+
+    .section-motto {
+        padding: 5rem 0;
+    }
+}

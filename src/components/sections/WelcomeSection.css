@@ -1,0 +1,98 @@
+.section-welcome {
+    padding: 6rem 0;
+    background: #fff;
+    overflow: hidden;
+}
+
+.welcome-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+@media (min-width: 992px) {
+    .welcome-grid {
+        grid-template-columns: 0.8fr 1.2fr;
+    }
+}
+
+.welcome-image-col {
+    position: relative;
+}
+
+.pastor-img {
+    width: 100%;
+    border-radius: 20px;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    object-fit: cover;
+    aspect-ratio: 3/4;
+    /* Ensure good aspect ratio for portrait */
+}
+
+.dot-pattern {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    width: 100px;
+    height: 100px;
+    background-image: radial-gradient(#ea1c24 2px, transparent 2px);
+    background-size: 10px 10px;
+    z-index: 1;
+}
+
+.welcome-text-col {
+    padding-left: 1rem;
+}
+
+.small-heading {
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.big-heading {
+    font-size: 3rem;
+    color: var(--color-primary);
+    line-height: 1.1;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+}
+
+.red-divider {
+    width: 60px;
+    height: 4px;
+    background: var(--color-brand-red);
+    margin-bottom: 2rem;
+}
+
+.welcome-body {
+    font-size: 1.15rem;
+    color: var(--color-secondary);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+}
+
+.btn-red-pill {
+    background: var(--color-brand-red);
+    color: #fff;
+    padding: 0.8rem 2rem;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-red-pill:hover {
+    background: #c4121a;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(234, 28, 36, 0.3);
+}
