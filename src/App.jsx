@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import BackToTop from './components/common/BackToTop';
@@ -19,12 +20,17 @@ import Events from './pages/Events';
 import EventDetails from './pages/EventDetails';
 import Biography from './pages/Biography';
 import Testimonies from './pages/Testimonies';
+import VmixTestimony from './pages/VmixTestimony'; // Import the new component
+
 
 function App() {
+  const location = useLocation();
+  const isVmixRoute = location.pathname.startsWith('/vmix');
+
   return (
-    <div className="app-container">
-      <Navbar />
-      <ScrollToTop />
+    <div className={`app-container ${isVmixRoute ? 'vmix-mode' : ''}`}>
+      {!isVmixRoute && <Navbar />}
+      {!isVmixRoute && <ScrollToTop />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -42,10 +48,14 @@ function App() {
         <Route path="/resources/events" element={<Events />} />
         <Route path="/resources/events/:id" element={<EventDetails />} />
         <Route path="/resources/testimonies" element={<Testimonies />} />
+        {/* vMix Overlay Route - Keep isolated from main nav */}
+        <Route path="/vmix/testimony" element={<VmixTestimony />} />
+
       </Routes>
-      <Footer />
-      <BackToTop />
-    </div>
+
+      {!isVmixRoute && <Footer />}
+      {!isVmixRoute && <BackToTop />}
+    </div >
   );
 }
 

@@ -78,7 +78,7 @@ const About = () => {
                         <div className="story-text" data-aos="fade-right">
                             <h2>Our <span className="text-highlight">Story</span></h2>
                             <p className="story-intro">
-                                Founded on the principles of faith, hope, and love, Christ For The World Mission Inc.
+                                Founded on the principles of faith, hope, and love, Christ For The World Mission Int'l
                                 has been a pillar of spiritual growth and community transformation.
                             </p>
                             <p>

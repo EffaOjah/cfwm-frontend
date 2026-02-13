@@ -19,7 +19,7 @@ const Hero = () => {
             <div className="container hero-content-center" data-aos="fade-up">
                 <h1 className="hero-heading">
                     Welcome to <br />
-                    <span className="church-name">Christ For The World Mission Inc.</span>
+                    <span className="church-name">Christ For The World Mission Int'l</span>
                     <span className="tagline">(Jesus Power House)</span>
                 </h1>
 

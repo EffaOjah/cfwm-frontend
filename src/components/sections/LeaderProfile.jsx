@@ -10,7 +10,7 @@ const LeaderProfile = () => {
                     <span className="leader-role">GENERAL OVERSEER</span>
                     <h2 className="leader-name">Rev. Dr. Nick Ezeh</h2>
                     <p className="leader-bio">
-                        Rev. Dr. Nick Ezeh is a man ordained by God to liberate men from the shackles of darkness through the preaching of the Word of Faith. He is the presiding pastor of Christ for the world mission Inc.
+                        Rev. Dr. Nick Ezeh is a man ordained by God to liberate men from the shackles of darkness through the preaching of the Word of Faith. He is the presiding pastor of Christ For The World Mission Int'l.
                     </p>
                     <Link to="/about/overseer" className="leader-link">Read Full Biography</Link>
                 </div>

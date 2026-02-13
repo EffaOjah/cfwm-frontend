@@ -1,0 +1,108 @@
+/* VmixTestimony.css */
+/* Reset and ensure box-sizing */
+.vmix-container * {
+    box-sizing: border-box;
+}
+
+.vmix-container {
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 4rem;
+    font-family: var(--font-heading, sans-serif);
+}
+
+.testimony-card {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    /* Center vertically */
+
+    background: transparent;
+    width: auto;
+    max-width: 800px;
+
+    transform: translateX(-150%);
+    animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    /* Lift shadow */
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+.logo-container {
+    background-color: #c41519;
+    /* Darker red */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2rem 1rem 1.5rem;
+    height: 100px;
+
+    /* Diagonal cut on the right */
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+    margin-right: -15px;
+    /* Pull text in to overlap the slant */
+    z-index: 10;
+    min-width: 120px;
+}
+
+.church-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    /* Make logo white for contrast on red */
+}
+
+.text-content {
+    background-color: white;
+    padding: 1rem 2.5rem 1rem 2.5rem;
+    height: 80px;
+    /* Slightly shorter than logo container for dynamic look */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 0 8px 8px 0;
+    z-index: 5;
+    min-width: 300px;
+    border-left: 20px solid transparent;
+    /* Spacer for the overlap */
+}
+
+.main-title {
+    color: #c41519;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.sub-title {
+    color: #64748b;
+    font-family: var(--font-body, sans-serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 0.25rem;
+    white-space: nowrap;
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateX(-150%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

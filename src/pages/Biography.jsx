@@ -101,7 +101,7 @@ const Biography = () => {
                                 For over four decades, Rev. Dr. Nick Ezeh has been a relentless voice for spiritual transformation and kingdom excellence.
                             </p>
                             <p>
-                                His journey began with a simple yet profound surrender to the divine call. Today, he stands as the visionary behind Christ For The World Mission Inc., a ministry dedicated to raising champions who dominate their spheres of influence with the grace of God.
+                                His journey began with a simple yet profound surrender to the divine call. Today, he stands as the visionary behind Christ For The World Mission Int'l, a ministry dedicated to raising champions who dominate their spheres of influence with the grace of God.
                             </p>
                             <p>
                                 Dr. Ezeh is renowned for his insightful teaching of the Word, his commitment to intense prayer, and his fatherly heart that seeks to empower the next generation of spiritual and secular leaders.

@@ -12,7 +12,7 @@ const Footer = () => {
                         <img src={logoImg} alt="CFWM Logo" />
                     </Link>
                     <p className="footer-desc">
-                        Christ For The World Mission Inc.<br />
+                        Christ For The World Mission Int'l<br />
                         (Jesus Power House)<br /><br />
                         Raising a generation of champions, empowered by the Word and Spirit for global impact.
                     </p>
@@ -65,7 +65,7 @@ const Footer = () => {
             </div>
 
             <div className="footer-bottom container">
-                <p>&copy; {new Date().getFullYear()} Christ For The World Mission Inc. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} Christ For The World Mission Int'l. All rights reserved.</p>
                 <div className="policy-links">
                     <Link to="/privacy">Privacy Policy</Link>
                     <Link to="/terms">Terms of Use</Link>

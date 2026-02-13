@@ -1,6 +1,6 @@
 # Christ For The World Mission (CFWM) Website
 
-Welcome to the official repository for the Christ For The World Mission Inc. website. This application serves as the digital hub for the ministry, providing members and visitors with access to live services, sermons, resources, and church information.
+Welcome to the official repository for the Christ For The World Mission Int'l website. This application serves as the digital hub for the ministry, providing members and visitors with access to live services, sermons, resources, and church information.
 
 ## 🚀 About the Project
 
