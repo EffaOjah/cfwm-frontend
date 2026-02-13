@@ -1,97 +1,105 @@
 # CFWM Backend Server
 
 ## Overview
-Independent Express.js backend server with MySQL database using MVC architecture.
+Independent Express.js backend server with MySQL database using MVC architecture. This server manages church events, and testimonies.
 
 ## Project Structure
 ```
 server/
 ├── config/
-│   └── database.cjs      # MySQL connection pool
-├── controllers/          # Business logic
-├── models/              # Database models/queries
+│   └── database.js       # MySQL connection pool
+├── controllers/          # Business logic (Event, Testimony)
+├── models/              # Database models (Event, Testimony)
 ├── routes/              # API endpoints
-├── node_modules/        # Server dependencies (separate from frontend)
+├── node_modules/        # Server dependencies
 ├── package.json         # Server dependencies and scripts
 ├── .env                 # Environment variables (not in git)
 ├── .env.example         # Environment template
 ├── .gitignore          # Git ignore rules
 ├── README.md           # This file
-└── index.cjs           # Main server entry point
+└── index.js            # Main server entry point
 ```
-
-## Independent Server
-
-The server is now a **separate entity** with its own:
-- `package.json` - Independent dependencies
-- `node_modules/` - Isolated from frontend dependencies
-- Scripts - Run independently or from root
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v14+)
+- Node.js (v18+)
 - MySQL Server
 
-### Installation
+### Environment Setup
+Create a `.env` file in the `server` directory (refer to `.env.example`):
+```env
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=cfwm_db
+CLIENT_URL=http://localhost:5173
+```
 
-**From server directory:**
+### Installation & Run
+
 ```bash
 cd server
 npm install
+npm run dev
 ```
 
-**From root directory:**
-```bash
-npm run server
-```
+---
 
-### Running the Server
+## Database Schema
 
-**From server directory:**
-```bash
-cd server
-npm run dev          # Development (auto-reload)
-npm start            # Production
-```
+The server uses **UUIDs** (VARCHAR(36)) for all primary identifiers.
 
-**From root directory:**
-```bash
-npm run server       # Development
-npm run server:prod  # Production
-```
+### 1. Events Table (`events`)
+Stores church events and programs.
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | VARCHAR(36) | Primary Key (UUID) |
+| `title` | VARCHAR(255) | Event name |
+| `description` | TEXT | Detailed description |
+| `event_date` | DATE | Date of the event |
+| `event_time` | TIME | Start time |
+| `location` | VARCHAR(255) | Venue name |
+| `image_url` | VARCHAR(255) | Poster/Banner URL |
+| `created_at` | TIMESTAMP | Creation time |
 
-Server runs on `http://localhost:3000`
+### 2. Testimonies Table (`testimonies`)
+Stores member testimonies for moderation and display.
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | VARCHAR(36) | Primary Key (UUID) |
+| `name` | VARCHAR(255) | Name of testifier |
+| `content` | TEXT | The testimony story |
+| `category` | VARCHAR(100) | Healing, Provision, etc. |
+| `status` | ENUM | 'pending' or 'approved' |
+| `created_at` | TIMESTAMP | Submission time |
 
-## MySQL Database
+---
 
-### Connection Pool
-The server uses `mysql2/promise` with connection pooling for better performance.
+## API Documentation
 
-### Example Query Usage
-```javascript
-const { pool } = require('../config/database.cjs');
+### Events
+- `GET /api/events` - Get all events (Sorted by date)
+- `GET /api/events/:id` - Get single event
+- `POST /api/events` - Create event
+- `PUT /api/events/:id` - Update event
+- `DELETE /api/events/:id` - Delete event
 
-// In your controller
-const getUsers = async (req, res) => {
-    try {
-        const [rows] = await pool.query('SELECT * FROM users');
-        res.json({ data: rows });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-```
+### Testimonies
+- `GET /api/testimonies` - Get approved testimonies
+- `GET /api/testimonies/all` - Get all testimonies (Admin)
+- `POST /api/testimonies` - Submit testimony (Defaults to pending)
+- `PUT /api/testimonies/:id` - Approve/Update testimony
+- `DELETE /api/testimonies/:id` - Delete testimony
 
-## API Endpoints
-
-### Health Check
-- `GET /api/health` - Server status
+### Health & Utils
+- `GET /api/health` - Check server/database connection
+- `GET /` - API version info
 
 ## Technologies
-- **Express.js** - Web framework
-- **MySQL2** - MySQL client with promises
-- **CORS** - Cross-origin support
-- **Body-parser** - Request parsing
-- **Dotenv** - Environment variables
-- **Nodemon** - Auto-reload in development
+- **Express.js** & **Node.js**
+- **MySQL2** (with Connection Pooling)
+- **UUID** (for scalable identifiers)
+- **Dotenv** & **CORS**
+- **Nodemon** (Dev-mode)
