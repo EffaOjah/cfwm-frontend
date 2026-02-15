@@ -1,5 +1,6 @@
 {
   "routes": [
+    { "handle": "filesystem" },
     { "src": "^/admin(?:/.*)?$", "dest": "/index.html" },
     { "src": "^/vmix(?:/.*)?$", "dest": "/index.html" },
     { "src": "^/(.*)$", "dest": "/index.html" }
