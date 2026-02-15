@@ -25,8 +25,11 @@ const eventController = {
     createEvent: async (req, res) => {
         try {
             const id = await Event.create(req.body);
-            res.status(201).json({ message: 'Event created', id });
+            res.status(201).json({ message: 'Event created successfully', id });
         } catch (error) {
+            if (error.code === 'ER_DUP_ENTRY') {
+                return res.status(409).json({ message: 'Title already exists. Please use a unique title.' });
+            }
             res.status(500).json({ message: 'Error creating event', error: error.message });
         }
     },
@@ -34,8 +37,11 @@ const eventController = {
     updateEvent: async (req, res) => {
         try {
             await Event.update(req.params.id, req.body);
-            res.status(200).json({ message: 'Event updated' });
+            res.status(200).json({ message: 'Event updated successfully' });
         } catch (error) {
+            if (error.code === 'ER_DUP_ENTRY') {
+                return res.status(409).json({ message: 'Title already exists. Please use a unique title.' });
+            }
             res.status(500).json({ message: 'Error updating event', error: error.message });
         }
     },

@@ -21,6 +21,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 const eventRoutes = require('./routes/eventRoutes.js');
 const testimonyRoutes = require('./routes/testimonyRoutes.js');
+const productRoutes = require('./routes/productRoutes.js');
+const sermonRoutes = require('./routes/sermonRoutes.js');
+const locationRoutes = require('./routes/locationRoutes.js');
+const formRoutes = require('./routes/formRoutes.js');
 
 // Database
 const { testConnection } = require('./config/database.js');
@@ -28,6 +32,14 @@ const { testConnection } = require('./config/database.js');
 // Use routes
 app.use('/api/events', eventRoutes);
 app.use('/api/testimonies', testimonyRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/sermons', sermonRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/forms', formRoutes);
+
+
+
+
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
