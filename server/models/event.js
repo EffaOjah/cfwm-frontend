@@ -14,19 +14,19 @@ const Event = {
 
     create: async (eventData) => {
         const id = crypto.randomUUID();
-        const { title, description, event_date, event_time, location, image_url } = eventData;
+        const { title, subtitle, description, highlights, event_date, event_time, location, organizer, category, status, image_url } = eventData;
         await pool.query(
-            'INSERT INTO events (id, title, description, event_date, event_time, location, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [id, title, description, event_date, event_time, location, image_url]
+            'INSERT INTO events (id, title, subtitle, description, highlights, event_date, event_time, location, organizer, category, status, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, title, subtitle, description, highlights, event_date, event_time, location, organizer, category, status || 'published', image_url]
         );
         return id;
     },
 
     update: async (id, eventData) => {
-        const { title, description, event_date, event_time, location, image_url } = eventData;
+        const { title, subtitle, description, highlights, event_date, event_time, location, organizer, category, status, image_url } = eventData;
         await pool.query(
-            'UPDATE events SET title = ?, description = ?, event_date = ?, event_time = ?, location = ?, image_url = ? WHERE id = ?',
-            [title, description, event_date, event_time, location, image_url, id]
+            'UPDATE events SET title = ?, subtitle = ?, description = ?, highlights = ?, event_date = ?, event_time = ?, location = ?, organizer = ?, category = ?, status = ?, image_url = ? WHERE id = ?',
+            [title, subtitle, description, highlights, event_date, event_time, location, organizer, category, status, image_url, id]
         );
     },
 

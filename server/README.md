@@ -57,11 +57,16 @@ Stores church events and programs.
 | :--- | :--- | :--- |
 | `id` | VARCHAR(36) | Primary Key (UUID) |
 | `title` | VARCHAR(255) | Event name |
+| `subtitle` | VARCHAR(255) | Event theme/tagline |
+| `category` | VARCHAR(100) | Service, Program, Outreach, etc. |
 | `description` | TEXT | Detailed description |
+| `highlights` | TEXT | Bullet points of event focus |
 | `event_date` | DATE | Date of the event |
 | `event_time` | TIME | Start time |
 | `location` | VARCHAR(255) | Venue name |
+| `organizer` | VARCHAR(255) | e.g., Rev. Dr. Nick Ezeh |
 | `image_url` | VARCHAR(255) | Poster/Banner URL |
+| `status` | ENUM | 'draft' or 'published' |
 | `created_at` | TIMESTAMP | Creation time |
 
 ### 2. Testimonies Table (`testimonies`)
