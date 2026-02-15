@@ -1,5 +1,6 @@
 import { useState, cloneElement, Children } from 'react';
 import Sidebar from './Sidebar';
+import Topbar from './Topbar';
 import '../../admin.css';
 
 const AdminLayout = ({ children }) => {
@@ -7,7 +8,7 @@ const AdminLayout = ({ children }) => {
 
     // Enhance children to automatically pass onMenuClick to Topbar if present
     const enhancedChildren = Children.map(children, child => {
-        if (child?.type?.name === 'Topbar') {
+        if (child?.type === Topbar) {
             return cloneElement(child, {
                 onMenuClick: () => setIsMobileOpen(true)
             });
