@@ -1,12 +1,100 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Send, Upload, User, Mail, Phone, MapPin, MessageSquare, Heart, Anchor, Info, PenTool } from 'lucide-react';
 import './Forms.css';
+import ResponseModal from '../components/admin/ResponseModal';
 import formsHero from '../assets/worship-hero.png';
 import firstTimerImg from '../assets/mini_magick20260131-14148-649whl.jpg';
 import testimonyImg from '../assets/mini_magick20260131-13418-mb0hlp.jpg';
 import prayerImg from '../assets/mini_magick20260131-13418-u6grhx.jpg';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const Forms = () => {
+    // Form States
+    const [firstTimerData, setFirstTimerData] = useState({
+        full_name: '',
+        phone: '',
+        email: '',
+        address: '',
+        wants_visit: false
+    });
+
+    const [testimonyData, setTestimonyData] = useState({
+        name: '',
+        content: '',
+        permission: false
+    });
+
+    const [prayerData, setPrayerData] = useState({
+        name: '',
+        phone: '',
+        topic: '',
+        request_details: ''
+    });
+
+    // Response Modal State
+    const [responseModal, setResponseModal] = useState({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
+
+    const showResponse = (type, title, message) => {
+        setResponseModal({ isOpen: true, type, title, message });
+    };
+
+    const handleFirstTimerSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`${API_BASE_URL}/forms/first-timer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(firstTimerData)
+            });
+            if (!response.ok) throw new Error('Failed to submit details');
+            showResponse('success', 'Submitted!', 'Welcome to the family! We will get in touch with you soon.');
+            setFirstTimerData({ full_name: '', phone: '', email: '', address: '', wants_visit: false });
+        } catch (err) {
+            showResponse('error', 'Submission Failed', err.message);
+        }
+    };
+
+    const handleTestimonySubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`${API_BASE_URL}/testimonies`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: testimonyData.name,
+                    content: testimonyData.content
+                })
+            });
+            if (!response.ok) throw new Error('Failed to share testimony');
+            showResponse('success', 'Praise God!', 'Thank you for sharing your testimony. It has been received.');
+            setTestimonyData({ name: '', content: '', permission: false });
+        } catch (err) {
+            showResponse('error', 'Submission Failed', err.message);
+        }
+    };
+
+    const handlePrayerSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`${API_BASE_URL}/forms/prayer-request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(prayerData)
+            });
+            if (!response.ok) throw new Error('Failed to send request');
+            showResponse('success', 'Sent!', 'Your prayer request has been received. We are standing in faith with you.');
+            setPrayerData({ name: '', phone: '', topic: '', request_details: '' });
+        } catch (err) {
+            showResponse('error', 'Submission Failed', err.message);
+        }
+    };
+
     useEffect(() => {
         // Scroll to hash on load
         const hash = window.location.hash;
@@ -82,31 +170,58 @@ const Forms = () => {
                                 We are delighted to have you! Please fill out this form so we can connect with you.
                             </p>
                         </div>
-                        <form onSubmit={(e) => e.preventDefault()}>
+                        <form onSubmit={handleFirstTimerSubmit}>
                             <div className="form-group">
                                 <label><User size={18} /> Full Name</label>
-                                <input type="text" placeholder="Enter your full name" required />
+                                <input
+                                    type="text"
+                                    placeholder="Enter your full name"
+                                    required
+                                    value={firstTimerData.full_name}
+                                    onChange={(e) => setFirstTimerData({ ...firstTimerData, full_name: e.target.value })}
+                                />
                             </div>
 
                             <div className="form-row">
                                 <div className="form-group">
                                     <label><Phone size={18} /> Phone Number</label>
-                                    <input type="tel" placeholder="+234..." required />
+                                    <input
+                                        type="tel"
+                                        placeholder="+234..."
+                                        required
+                                        value={firstTimerData.phone}
+                                        onChange={(e) => setFirstTimerData({ ...firstTimerData, phone: e.target.value })}
+                                    />
                                 </div>
                                 <div className="form-group">
                                     <label><Mail size={18} /> Email Address</label>
-                                    <input type="email" placeholder="email@example.com" required />
+                                    <input
+                                        type="email"
+                                        placeholder="email@example.com"
+                                        required
+                                        value={firstTimerData.email}
+                                        onChange={(e) => setFirstTimerData({ ...firstTimerData, email: e.target.value })}
+                                    />
                                 </div>
                             </div>
 
                             <div className="form-group">
                                 <label><MapPin size={18} /> Residential Address</label>
-                                <textarea rows="3" placeholder="Where do you stay?"></textarea>
+                                <textarea
+                                    rows="3"
+                                    placeholder="Where do you stay?"
+                                    value={firstTimerData.address}
+                                    onChange={(e) => setFirstTimerData({ ...firstTimerData, address: e.target.value })}
+                                ></textarea>
                             </div>
 
                             <div className="form-checkbox">
                                 <label>
-                                    <input type="checkbox" />
+                                    <input
+                                        type="checkbox"
+                                        checked={firstTimerData.wants_visit}
+                                        onChange={(e) => setFirstTimerData({ ...firstTimerData, wants_visit: e.target.checked })}
+                                    />
                                     <span>I would like a pastoral visit</span>
                                 </label>
                             </div>
@@ -134,41 +249,41 @@ const Forms = () => {
                                 "They overcame him by the blood of the Lamb and by the word of their testimony."
                             </p>
                         </div>
-                        <form onSubmit={(e) => e.preventDefault()}>
+                        <form onSubmit={handleTestimonySubmit}>
                             <div className="form-group">
                                 <label><User size={18} /> Full Name</label>
-                                <input type="text" placeholder="Enter your name" required />
+                                <input
+                                    type="text"
+                                    placeholder="Enter your full name"
+                                    required
+                                    value={testimonyData.name}
+                                    onChange={(e) => setTestimonyData({ ...testimonyData, name: e.target.value })}
+                                />
                             </div>
 
                             <div className="form-group">
-                                <label><MessageSquare size={18} /> Testimony Title</label>
-                                <input type="text" placeholder="What did God do?" required />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Describe Your Testimony</label>
-                                <textarea rows="6" placeholder="Share the details of your testimony here..." required></textarea>
-                            </div>
-
-                            <div className="form-group">
-                                <label><Upload size={18} /> Upload Image (Optional)</label>
-                                <div className="file-input-wrapper">
-                                    <div className="file-placeholder">
-                                        <Upload size={32} style={{ opacity: 0.5 }} />
-                                        <span>Click to upload supporting image/document</span>
-                                    </div>
-                                    <input type="file" />
-                                </div>
+                                <label><MessageSquare size={18} /> Shared Testimony</label>
+                                <textarea
+                                    rows="8"
+                                    placeholder="Tell us what God has done for you..."
+                                    required
+                                    value={testimonyData.content}
+                                    onChange={(e) => setTestimonyData({ ...testimonyData, content: e.target.value })}
+                                ></textarea>
                             </div>
 
                             <div className="form-checkbox">
                                 <label>
-                                    <input type="checkbox" />
+                                    <input
+                                        type="checkbox"
+                                        checked={testimonyData.permission}
+                                        onChange={(e) => setTestimonyData({ ...testimonyData, permission: e.target.checked })}
+                                    />
                                     <span>I give permission to share this testimony publicly</span>
                                 </label>
                             </div>
 
-                            <button type="submit" className="btn-submit">
+                            <button type="submit" className="btn-submit" disabled={!testimonyData.permission}>
                                 Share Testimony <Send size={18} />
                             </button>
                         </form>
@@ -191,35 +306,56 @@ const Forms = () => {
                                 We believe in the power of prayer. Let us stand in faith with you.
                             </p>
                         </div>
-                        <form onSubmit={(e) => e.preventDefault()}>
+                        <form onSubmit={handlePrayerSubmit}>
                             <div className="form-row">
                                 <div className="form-group">
                                     <label><User size={18} /> Name</label>
-                                    <input type="text" placeholder="Your name (Optional)" />
+                                    <input
+                                        type="text"
+                                        placeholder="Your name (Optional)"
+                                        value={prayerData.name}
+                                        onChange={(e) => setPrayerData({ ...prayerData, name: e.target.value })}
+                                    />
                                 </div>
                                 <div className="form-group">
                                     <label><Phone size={18} /> Phone</label>
-                                    <input type="tel" placeholder="Your phone number" required />
+                                    <input
+                                        type="tel"
+                                        placeholder="Your phone number"
+                                        required
+                                        value={prayerData.phone}
+                                        onChange={(e) => setPrayerData({ ...prayerData, phone: e.target.value })}
+                                    />
                                 </div>
                             </div>
 
                             <div className="form-group">
                                 <label><Info size={18} /> Prayer Topic</label>
-                                <select required>
+                                <select
+                                    required
+                                    value={prayerData.topic}
+                                    onChange={(e) => setPrayerData({ ...prayerData, topic: e.target.value })}
+                                >
                                     <option value="">Select a topic</option>
-                                    <option>General Prayer</option>
-                                    <option>Healing</option>
-                                    <option>Financial Breakthrough</option>
-                                    <option>Family & Relationships</option>
-                                    <option>Spiritual Growth</option>
-                                    <option>Deliverance</option>
-                                    <option>Other</option>
+                                    <option value="General Prayer">General Prayer</option>
+                                    <option value="Healing">Healing</option>
+                                    <option value="Financial Breakthrough">Financial Breakthrough</option>
+                                    <option value="Family & Relationships">Family & Relationships</option>
+                                    <option value="Spiritual Growth">Spiritual Growth</option>
+                                    <option value="Deliverance">Deliverance</option>
+                                    <option value="Other">Other</option>
                                 </select>
                             </div>
 
                             <div className="form-group">
                                 <label>Prayer Details</label>
-                                <textarea rows="6" placeholder="How can we pray for you?" required></textarea>
+                                <textarea
+                                    rows="6"
+                                    placeholder="How can we pray for you?"
+                                    required
+                                    value={prayerData.request_details}
+                                    onChange={(e) => setPrayerData({ ...prayerData, request_details: e.target.value })}
+                                ></textarea>
                             </div>
 
                             <button type="submit" className="btn-submit">
@@ -230,6 +366,14 @@ const Forms = () => {
                 </div>
 
             </div>
+
+            <ResponseModal
+                isOpen={responseModal.isOpen}
+                onClose={() => setResponseModal(prev => ({ ...prev, isOpen: false }))}
+                type={responseModal.type}
+                title={responseModal.title}
+                message={responseModal.message}
+            />
         </div>
     );
 };

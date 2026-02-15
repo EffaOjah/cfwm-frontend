@@ -1,11 +1,37 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 
-const ActionDropdown = ({ isOpen, onClose, actions }) => {
+const ActionDropdown = ({ isOpen, onClose, actions, triggerRef }) => {
     const dropdownRef = useRef(null);
+    const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+    const updatePosition = () => {
+        if (triggerRef?.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            // Position the dropdown below the trigger, aligned to the right
+            setCoords({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.right + window.scrollX - 180 // Assuming minWidth 180px
+            });
+        }
+    };
+
+    useLayoutEffect(() => {
+        if (isOpen) {
+            updatePosition();
+            window.addEventListener('resize', updatePosition);
+            window.addEventListener('scroll', updatePosition, true);
+        }
+        return () => {
+            window.removeEventListener('resize', updatePosition);
+            window.removeEventListener('scroll', updatePosition, true);
+        };
+    }, [isOpen, triggerRef]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+                triggerRef?.current && !triggerRef.current.contains(event.target)) {
                 onClose();
             }
         };
@@ -14,18 +40,18 @@ const ActionDropdown = ({ isOpen, onClose, actions }) => {
             document.addEventListener('mousedown', handleClickOutside);
         }
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, triggerRef]);
 
     if (!isOpen) return null;
 
-    return (
+    const dropdownContent = (
         <div
             ref={dropdownRef}
             style={{
                 position: 'absolute',
-                right: '0',
-                top: 'calc(100% + 5px)', // Reverted to downward opening
-                zIndex: 2000,           // Maximum z-index to fly over everything
+                left: `${coords.left}px`,
+                top: `${coords.top}px`,
+                zIndex: 9999,
                 background: 'white',
                 borderRadius: '16px',
                 boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
@@ -39,7 +65,8 @@ const ActionDropdown = ({ isOpen, onClose, actions }) => {
                 {actions.map((action, index) => (
                     <button
                         key={index}
-                        onClick={() => {
+                        onClick={(e) => {
+                            e.stopPropagation();
                             action.onClick();
                             onClose();
                         }}
@@ -82,6 +109,8 @@ const ActionDropdown = ({ isOpen, onClose, actions }) => {
             </style>
         </div>
     );
+
+    return createPortal(dropdownContent, document.body);
 };
 
 export default ActionDropdown;

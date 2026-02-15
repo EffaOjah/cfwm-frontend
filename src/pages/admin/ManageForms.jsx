@@ -17,12 +17,13 @@ import {
     AlertCircle,
     FileType
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import AdminModal from '../../components/admin/AdminModal';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
 
 const ManageForms = () => {
+    const dropdownTriggerRef = useRef(null);
     const [activeTab, setActiveTab] = useState('firstTimers');
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -232,26 +233,26 @@ const ManageForms = () => {
                                             <button className="admin-icon-btn" onClick={() => handleViewDetails(item)}>
                                                 <Eye size={16} />
                                             </button>
-                                            <div style={{ position: 'relative' }}>
-                                                <button
-                                                    className="admin-icon-btn"
-                                                    onClick={() => setActiveDropdownId(activeDropdownId === item.id ? null : item.id)}
-                                                >
-                                                    <MoreVertical size={16} />
-                                                </button>
-                                                <ActionDropdown
-                                                    isOpen={activeDropdownId === item.id}
-                                                    onClose={() => setActiveDropdownId(null)}
-                                                    actions={[
-                                                        {
-                                                            label: activeTab === 'firstTimers' ? 'Mark Followed Up' : 'Mark Prayed Over',
-                                                            icon: <CheckCircle size={16} />,
-                                                            onClick: () => toggleStatus(item.id)
-                                                        },
-                                                        { label: 'Delete Record', icon: <Trash2 size={16} />, onClick: () => handleDeleteClick(item.id), type: 'danger' }
-                                                    ]}
-                                                />
-                                            </div>
+                                            <button
+                                                ref={activeDropdownId === item.id ? dropdownTriggerRef : null}
+                                                className="admin-icon-btn"
+                                                onClick={() => setActiveDropdownId(activeDropdownId === item.id ? null : item.id)}
+                                            >
+                                                <MoreVertical size={16} />
+                                            </button>
+                                            <ActionDropdown
+                                                isOpen={activeDropdownId === item.id}
+                                                onClose={() => setActiveDropdownId(null)}
+                                                triggerRef={dropdownTriggerRef}
+                                                actions={[
+                                                    {
+                                                        label: activeTab === 'firstTimers' ? 'Mark Followed Up' : 'Mark Prayed Over',
+                                                        icon: <CheckCircle size={16} />,
+                                                        onClick: () => toggleStatus(item.id)
+                                                    },
+                                                    { label: 'Delete Record', icon: <Trash2 size={16} />, onClick: () => handleDeleteClick(item.id), type: 'danger' }
+                                                ]}
+                                            />
                                         </div>
                                     </td>
                                 </tr>

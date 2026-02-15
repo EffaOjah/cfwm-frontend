@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Topbar from '../../components/admin/Topbar';
 import {
@@ -9,118 +10,41 @@ import {
     MapPin,
     Clock
 } from 'lucide-react';
-import { useState } from 'react';
 import AdminModal from '../../components/admin/AdminModal';
 import ConfirmModal from '../../components/admin/ConfirmModal';
+import ResponseModal from '../../components/admin/ResponseModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
 import { ExternalLink, Share2 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const ManageEvents = () => {
+    const dropdownTriggerRef = useRef(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [editingEventId, setEditingEventId] = useState(null);
     const [eventIdToDelete, setEventIdToDelete] = useState(null);
-    const [events, setEvents] = useState([
-        {
-            id: '1',
-            title: 'Sunday Celebration Service',
-            subtitle: 'Divine Encounter',
-            date: '2023-10-29',
-            time: '09:00',
-            location: 'Headquarters',
-            status: 'published',
-            category: 'Service',
-            organizer: 'CFWM',
-            description: 'Join us for a powerful time of worship and word.',
-            highlights: '• Worship\n• Word\n• Miracles',
-            image_url: ''
-        },
-        {
-            id: '2',
-            title: 'Mid-week Prayer Meeting',
-            subtitle: 'Power for the Journey',
-            date: '2023-11-01',
-            time: '18:00',
-            location: 'Virtual / Ikeja',
-            status: 'published',
-            category: 'Service',
-            organizer: 'CFWM',
-            description: 'Mid-week spiritual refreshment.',
-            highlights: '',
-            image_url: ''
-        },
-        {
-            id: '3',
-            title: 'Youth Mega Jam',
-            subtitle: 'The Unleashing',
-            date: '2023-11-15',
-            time: '14:00',
-            location: 'Lekki Annex',
-            status: 'published',
-            category: 'Special Program',
-            organizer: 'CFWM Youth',
-            description: 'A massive gathering for youth.',
-            highlights: '• Music\n• Dance\n• Word',
-            image_url: ''
-        },
-        {
-            id: '4',
-            title: 'Womens Conference',
-            subtitle: 'Virtuous Woman',
-            date: '2023-12-05',
-            time: '10:00',
-            location: 'Headquarters',
-            status: 'published',
-            category: 'Conference',
-            organizer: 'CFWM Women',
-            description: 'Empowering women of faith.',
-            highlights: '',
-            image_url: ''
-        },
-        {
-            id: '5',
-            title: 'Leaders Retreat',
-            subtitle: 'Higher Grounds',
-            date: '2023-12-10',
-            time: '08:00',
-            location: 'Resort Center',
-            status: 'draft',
-            category: 'Special Program',
-            organizer: 'CFWM Admin',
-            description: 'Strategic planning for the new year.',
-            highlights: '',
-            image_url: ''
-        },
-        {
-            id: '6',
-            title: 'Christmas Carol Service',
-            subtitle: 'Celebrate the King',
-            date: '2023-12-24',
-            time: '17:00',
-            location: 'Headquarters',
-            status: 'published',
-            category: 'Service',
-            organizer: 'CFWM Choir',
-            description: 'Join us for a night of carols.',
-            highlights: '',
-            image_url: ''
-        },
-        {
-            id: '7',
-            title: 'New Year Crossover',
-            subtitle: 'Behold the New',
-            date: '2023-12-31',
-            time: '21:00',
-            location: 'Headquarters',
-            status: 'published',
-            category: 'Service',
-            organizer: 'CFWM',
-            description: 'Crossing over into the new year with power.',
-            highlights: '',
-            image_url: ''
-        },
-    ]);
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Response Modal State
+    const [responseModal, setResponseModal] = useState({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
+
+    const showResponse = (type, title, message) => {
+        setResponseModal({
+            isOpen: true,
+            type,
+            title,
+            message
+        });
+    };
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -141,6 +65,32 @@ const ManageEvents = () => {
     };
 
     const [formData, setFormData] = useState(initialFormState);
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const fetchEvents = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/events`);
+            if (!response.ok) throw new Error('Failed to fetch events');
+            const data = await response.json();
+            // Map backend event_date/time to frontend date/time for UI compatibility
+            const mappedEvents = data.map(event => ({
+                ...event,
+                date: event.event_date ? event.event_date.split('T')[0] : '',
+                time: event.event_time || ''
+            }));
+            setEvents(mappedEvents);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching events:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleOpenModal = (event = null) => {
         if (event) {
@@ -170,26 +120,48 @@ const ManageEvents = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
 
-        if (editingEventId) {
-            // Update existing event
-            setEvents(prev => prev.map(evt =>
-                evt.id === editingEventId ? { ...formData, id: editingEventId } : evt
-            ));
-        } else {
-            // Create new event
-            const newEvent = {
-                ...formData,
-                id: (events.length + 1).toString()
-            };
-            setEvents(prev => [...prev, newEvent]);
-        }
+        // Map frontend fields back to backend naming convention
+        const payload = {
+            ...formData,
+            event_date: formData.date,
+            event_time: formData.time
+        };
+        // Remove UI-specific mapping fields before sending
+        delete payload.date;
+        delete payload.time;
 
-        setIsModalOpen(false);
-        setFormData(initialFormState);
-        setEditingEventId(null);
+        try {
+            const url = editingEventId
+                ? `${API_BASE_URL}/events/${editingEventId}`
+                : `${API_BASE_URL}/events`;
+            const method = editingEventId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to save event');
+            }
+
+            await fetchEvents(); // Refresh list
+            setIsModalOpen(false);
+            setFormData(initialFormState);
+            setEditingEventId(null);
+            showResponse(
+                'success',
+                editingEventId ? 'Event Updated' : 'Event Created',
+                `The event "${payload.title}" has been successfully ${editingEventId ? 'updated' : 'saved'}.`
+            );
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
+        }
     };
 
     const handleDeleteClick = (id) => {
@@ -197,11 +169,22 @@ const ManageEvents = () => {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = () => {
-        if (eventIdToDelete) {
-            setEvents(prev => prev.filter(evt => evt.id !== eventIdToDelete));
+    const confirmDelete = async () => {
+        if (!eventIdToDelete) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/${eventIdToDelete}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Failed to delete event');
+
+            await fetchEvents(); // Refresh list
             setIsDeleteModalOpen(false);
             setEventIdToDelete(null);
+            showResponse('success', 'Event Deleted', 'The event has been permanently removed from the system.');
+        } catch (err) {
+            showResponse('error', 'Delete Failed', err.message);
         }
     };
 
@@ -252,79 +235,99 @@ const ManageEvents = () => {
                 </div>
 
                 <div className="admin-table-container">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Event Details</th>
-                                <th className="hide-mobile">Date & Time</th>
-                                <th className="hide-tablet">Location</th>
-                                <th className="hide-mobile">Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedEvents.map((event) => (
-                                <tr key={event.id}>
-                                    <td>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: '#f1f5f9', overflow: 'hidden', display: 'flex', alignItems: 'center', justifySelf: 'center' }}>
-                                            {event.image_url ? (
-                                                <img src={event.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                            ) : (
-                                                <Calendar size={20} className="text-slate-300" style={{ margin: 'auto' }} />
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
-                                            {event.category || 'CHURCH EVENT'}
-                                        </div>
-                                        <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{event.title}</div>
-                                        {event.subtitle && (
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>
-                                                {event.subtitle}
+                    {loading ? (
+                        <div style={{ padding: '4rem', textDisplay: 'center', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                            <div className="admin-loader" style={{ marginBottom: '1rem' }}>Loading events...</div>
+                        </div>
+                    ) : error ? (
+                        <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}>
+                            <p>Error: {error}</p>
+                            <button
+                                className="admin-action-btn-secondary"
+                                onClick={fetchEvents}
+                                style={{ marginTop: '1rem' }}
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    ) : events.length === 0 ? (
+                        <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                            <p>No events found. Create your first event!</p>
+                        </div>
+                    ) : (
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Event Details</th>
+                                    <th className="hide-mobile">Date & Time</th>
+                                    <th className="hide-tablet">Location</th>
+                                    <th className="hide-mobile">Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedEvents.map((event) => (
+                                    <tr key={event.id}>
+                                        <td>
+                                            <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: '#f1f5f9', overflow: 'hidden', display: 'flex', alignItems: 'center', justifySelf: 'center' }}>
+                                                {event.image_url ? (
+                                                    <img src={event.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <Calendar size={20} className="text-slate-300" style={{ margin: 'auto' }} />
+                                                )}
                                             </div>
-                                        )}
-                                    </td>
-                                    <td className="hide-mobile">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                                            <Calendar size={12} className="text-slate-400" />
-                                            <span>{event.date}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-muted)', fontSize: '0.75rem' }}>
-                                            <Clock size={12} />
-                                            <span>{event.time}</span>
-                                        </div>
-                                    </td>
-                                    <td className="hide-tablet">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <MapPin size={12} className="text-slate-400" />
-                                            <span>{event.location}</span>
-                                        </div>
-                                    </td>
-                                    <td className="hide-mobile">
-                                        <span className={`admin-status-badge status-${event.status}`}>
-                                            {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
-                                            <button
-                                                className="admin-icon-btn"
-                                                title="Edit"
-                                                onClick={() => handleOpenModal(event)}
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button
-                                                className="admin-icon-btn hover:text-red-500 hover:bg-red-50"
-                                                title="Delete"
-                                                onClick={() => handleDeleteClick(event.id)}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                            <div style={{ position: 'relative' }}>
+                                        </td>
+                                        <td>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--admin-primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                                                {event.category || 'CHURCH EVENT'}
+                                            </div>
+                                            <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{event.title}</div>
+                                            {event.subtitle && (
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>
+                                                    {event.subtitle}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="hide-mobile">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                                <Calendar size={12} className="text-slate-400" />
+                                                <span>{event.date}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-muted)', fontSize: '0.75rem' }}>
+                                                <Clock size={12} />
+                                                <span>{event.time}</span>
+                                            </div>
+                                        </td>
+                                        <td className="hide-tablet">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <MapPin size={12} className="text-slate-400" />
+                                                <span>{event.location}</span>
+                                            </div>
+                                        </td>
+                                        <td className="hide-mobile">
+                                            <span className={`admin-status-badge status-${event.status}`}>
+                                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
                                                 <button
+                                                    className="admin-icon-btn"
+                                                    title="Edit"
+                                                    onClick={() => handleOpenModal(event)}
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button
+                                                    className="admin-icon-btn hover:text-red-500 hover:bg-red-50"
+                                                    title="Delete"
+                                                    onClick={() => handleDeleteClick(event.id)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                <button
+                                                    ref={activeDropdownId === event.id ? dropdownTriggerRef : null}
                                                     className="admin-icon-btn"
                                                     title="More"
                                                     onClick={() => setActiveDropdownId(activeDropdownId === event.id ? null : event.id)}
@@ -335,6 +338,7 @@ const ManageEvents = () => {
                                                 <ActionDropdown
                                                     isOpen={activeDropdownId === event.id}
                                                     onClose={() => setActiveDropdownId(null)}
+                                                    triggerRef={dropdownTriggerRef}
                                                     actions={[
                                                         { label: 'View Live', icon: <ExternalLink size={16} />, onClick: () => window.open(`/events/${event.id}`, '_blank') },
                                                         { label: 'Copy Link', icon: <Share2 size={16} />, onClick: () => handleCopyLink(event.id) },
@@ -342,12 +346,12 @@ const ManageEvents = () => {
                                                     ]}
                                                 />
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -574,6 +578,14 @@ const ManageEvents = () => {
                 message="Are you sure you want to delete this event? This action cannot be undone."
                 confirmText="Delete Event"
                 type="danger"
+            />
+
+            <ResponseModal
+                isOpen={responseModal.isOpen}
+                onClose={() => setResponseModal(prev => ({ ...prev, isOpen: false }))}
+                type={responseModal.type}
+                title={responseModal.title}
+                message={responseModal.message}
             />
         </AdminLayout>
 

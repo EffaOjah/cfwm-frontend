@@ -312,6 +312,14 @@
     transform: translateY(-2px) scale(0.98);
 }
 
+.btn-submit:disabled {
+    background: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .form-section {

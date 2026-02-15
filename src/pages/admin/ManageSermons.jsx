@@ -11,100 +11,35 @@ import {
     Play,
     Eye,
     BookOpen,
-    Link as LinkIcon
+    Link as LinkIcon,
+    AlertCircle
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
 import AdminModal from '../../components/admin/AdminModal';
+import ResponseModal from '../../components/admin/ResponseModal';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const ManageSermons = () => {
-    const [sermons, setSermons] = useState([
-        {
-            id: '1',
-            title: 'The Power of Faith',
-            speaker: 'Rev. Dr. Nick Ezeh',
-            series: 'Faith Foundations',
-            description: 'A deep dive into the biblical principles of faith and how they apply to modern life.',
-            type: 'video',
-            sermon_date: '2023-10-24',
-            duration: '45:30',
-            video_url: 'https://youtube.com/watch?v=example1',
-            audio_url: '',
-            thumbnail_url: ''
-        },
-        {
-            id: '2',
-            title: 'Understanding Grace',
-            speaker: 'Rev. Dr. Nick Ezeh',
-            series: 'Grace Unmeasured',
-            description: 'Exploring the boundless grace of God and our position in His love.',
-            type: 'audio',
-            sermon_date: '2023-10-25',
-            duration: '32:15',
-            video_url: '',
-            audio_url: 'https://storage.example.com/audio/grace.mp3',
-            thumbnail_url: ''
-        },
-        {
-            id: '3',
-            title: 'Walking in Love',
-            speaker: 'Pst. Mary Jane',
-            series: 'Life in the Spirit',
-            description: 'Practical steps to walking in the love of God towards everyone we meet.',
-            type: 'video',
-            sermon_date: '2023-10-23',
-            duration: '58:00',
-            video_url: 'https://youtube.com/watch?v=example3',
-            audio_url: '',
-            thumbnail_url: ''
-        },
-        {
-            id: '4',
-            title: 'Divine Provision',
-            speaker: 'Rev. Dr. Nick Ezeh',
-            series: 'Covenant Secrets',
-            description: 'Unlocking the keys to supernatural provision and abundance.',
-            type: 'audio',
-            sermon_date: '2023-10-22',
-            duration: '40:20',
-            video_url: '',
-            audio_url: 'https://storage.example.com/audio/provision.mp3',
-            thumbnail_url: ''
-        },
-        {
-            id: '5',
-            title: 'The Joy of Salvation',
-            speaker: 'Pst. Mary Jane',
-            series: 'New Beginnings',
-            description: 'Celebrating the incredible gift of salvation and the joy it brings.',
-            type: 'video',
-            sermon_date: '2023-10-21',
-            duration: '50:15',
-            video_url: 'https://youtube.com/watch?v=example5',
-            audio_url: '',
-            thumbnail_url: ''
-        },
-        {
-            id: '6',
-            title: 'Overcoming Storms',
-            speaker: 'Rev. Dr. Nick Ezeh',
-            series: 'Faith Foundations',
-            description: 'How to stand strong in the middle of life\'s most challenging moments.',
-            type: 'audio',
-            sermon_date: '2023-10-20',
-            duration: '35:45',
-            video_url: '',
-            audio_url: 'https://storage.example.com/audio/storms.mp3',
-            thumbnail_url: ''
-        }
-    ]);
+    const dropdownTriggerRef = useRef(null);
+    const [sermons, setSermons] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [idToDelete, setIdToDelete] = useState(null);
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [viewingSermon, setViewingSermon] = useState(null);
+
+    // Response Modal State
+    const [responseModal, setResponseModal] = useState({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
 
     // Modal State for Upload/Edit
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,20 +57,81 @@ const ManageSermons = () => {
         thumbnail_url: ''
     });
 
+    // Filtering State
+    const [filterType, setFilterType] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(10);
+
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterType, debouncedSearchTerm]);
+
+    useEffect(() => {
+        fetchSermons();
+    }, [filterType, debouncedSearchTerm]);
+
+    const fetchSermons = async () => {
+        try {
+            setLoading(true);
+            const queryParams = new URLSearchParams();
+            if (filterType !== 'all') queryParams.append('type', filterType);
+            if (debouncedSearchTerm) queryParams.append('search', debouncedSearchTerm);
+
+            const response = await fetch(`${API_BASE_URL}/sermons?${queryParams.toString()}`);
+            if (!response.ok) throw new Error('Failed to fetch sermons');
+            const data = await response.json();
+            setSermons(data);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching sermons:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const showResponse = (type, title, message) => {
+        setResponseModal({
+            isOpen: true,
+            type,
+            title,
+            message
+        });
+    };
 
     const handleDeleteClick = (id) => {
         setIdToDelete(id);
         setIsDeleteModalOpen(true);
+        setActiveDropdownId(null);
     };
 
-    const confirmDelete = () => {
-        if (idToDelete) {
-            setSermons(prev => prev.filter(item => item.id !== idToDelete));
+    const confirmDelete = async () => {
+        if (!idToDelete) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/sermons/${idToDelete}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Failed to delete sermon');
+
+            await fetchSermons();
             setIsDeleteModalOpen(false);
             setIdToDelete(null);
+            showResponse('success', 'Sermon Deleted', 'The sermon has been permanently removed.');
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
         }
     };
 
@@ -148,11 +144,16 @@ const ManageSermons = () => {
     const handleOpenModal = (mode, initialData = null) => {
         setModalMode(mode);
         if (mode === 'edit' && initialData) {
-            setFormData(initialData);
+            // Format date for the input field
+            const formattedData = { ...initialData };
+            if (formattedData.sermon_date) {
+                formattedData.sermon_date = new Date(formattedData.sermon_date).toISOString().split('T')[0];
+            }
+            setFormData(formattedData);
         } else {
             setFormData({
                 title: '',
-                speaker: '',
+                speaker: 'Rev. Dr. Nick Ezeh',
                 series: '',
                 description: '',
                 sermon_date: new Date().toISOString().split('T')[0],
@@ -176,18 +177,36 @@ const ManageSermons = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSaveSermon = (e) => {
+    const handleSaveSermon = async (e) => {
         e.preventDefault();
-        if (modalMode === 'create') {
-            const newSermon = {
-                ...formData,
-                id: (sermons.length + 1).toString(),
-            };
-            setSermons(prev => [newSermon, ...prev]);
-        } else {
-            setSermons(prev => prev.map(item => item.id === formData.id ? formData : item));
+        try {
+            const url = modalMode === 'create'
+                ? `${API_BASE_URL}/sermons`
+                : `${API_BASE_URL}/sermons/${formData.id}`;
+
+            const method = modalMode === 'create' ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to save sermon');
+            }
+
+            await fetchSermons();
+            handleCloseModal();
+            showResponse(
+                'success',
+                modalMode === 'create' ? 'Sermon Uploaded' : 'Sermon Updated',
+                `The sermon "${formData.title}" has been saved successfully.`
+            );
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
         }
-        handleCloseModal();
     };
 
     // Pagination Logic
@@ -212,16 +231,23 @@ const ManageSermons = () => {
             <div className="admin-card-container">
                 <div className="admin-card-header">
                     <div className="admin-filter-group" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-                        {/* <div className="relative" style={{ flex: '1 1 280px', minWidth: '0' }}>
+                        <div className="relative" style={{ flex: '1 1 280px', minWidth: '0' }}>
                             <input
                                 type="text"
-                                placeholder="Search sermons..."
+                                placeholder="Search by title, speaker, or series..."
                                 className="admin-input"
                                 style={{ paddingLeft: '2.5rem', width: '100%' }}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" style={{ pointerEvents: 'none' }} />
-                        </div> */}
-                        <select className="admin-select" style={{ width: '100%', maxWidth: '200px', flex: '1 1 140px' }}>
+                        </div>
+                        <select
+                            className="admin-select"
+                            style={{ width: '100%', maxWidth: '200px', flex: '1 1 140px' }}
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                        >
                             <option value="all">All Types</option>
                             <option value="video">Video</option>
                             <option value="audio">Audio</option>
@@ -230,66 +256,82 @@ const ManageSermons = () => {
                 </div>
 
                 <div className="admin-table-container">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Sermon Details</th>
-                                <th className="hide-mobile">Series</th>
-                                <th>Type</th>
-                                <th className="hide-tablet">Duration</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedSermons.map((sermon) => (
-                                <tr key={sermon.id}>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <div style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '10px',
-                                                background: sermon.type === 'video' ? '#fee2e2' : '#dcfce7',
-                                                color: sermon.type === 'video' ? '#ef4444' : '#22c55e',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                {sermon.type === 'video' ? <Video size={20} /> : <Music size={20} />}
+                    {loading ? (
+                        <div style={{ padding: '4rem', textAlign: 'center' }}>
+                            <div className="admin-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                            <p style={{ color: 'var(--admin-text-muted)' }}>Loading sermons...</p>
+                        </div>
+                    ) : error ? (
+                        <div style={{ padding: '4rem', textAlign: 'center' }}>
+                            <AlertCircle size={40} style={{ margin: '0 auto 1rem', color: '#ef4444' }} />
+                            <p style={{ color: '#ef4444', fontWeight: 600 }}>{error}</p>
+                            <button onClick={fetchSermons} className="admin-action-btn-secondary mt-4">Try Again</button>
+                        </div>
+                    ) : (
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Sermon Details</th>
+                                    <th className="hide-mobile">Series</th>
+                                    <th>Type</th>
+                                    <th className="hide-tablet">Duration</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedSermons.length > 0 ? paginatedSermons.map((sermon) => (
+                                    <tr key={sermon.id}>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <div style={{
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '10px',
+                                                    background: sermon.type === 'video' ? '#fee2e2' : '#dcfce7',
+                                                    color: sermon.type === 'video' ? '#ef4444' : '#22c55e',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    {sermon.type === 'video' ? <Video size={20} /> : <Music size={20} />}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 700 }}>{sermon.title}</div>
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{sermon.speaker}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div style={{ fontWeight: 700 }}>{sermon.title}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{sermon.speaker}</div>
+                                        </td>
+                                        <td className="hide-mobile">
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>
+                                                {sermon.series?.toUpperCase() || 'N/A'}
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="hide-mobile">
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>
-                                            {sermon.series.toUpperCase()}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`admin-status-badge ${sermon.type === 'video' ? 'status-published' : 'status-pending'}`} style={{ fontSize: '0.7rem', fontWeight: 800 }}>
-                                            {sermon.type.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td className="hide-tablet">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>
-                                            <Clock size={14} />
-                                            {sermon.duration}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
-                                            <button className="admin-icon-btn hover:text-blue-500 hover:bg-blue-50" title="Play">
-                                                <Play size={16} />
-                                            </button>
-                                            <button className="admin-icon-btn" title="Edit" onClick={() => handleOpenModal('edit', sermon)}>
-                                                <Edit2 size={16} />
-                                            </button>
-
-                                            <div style={{ position: 'relative' }}>
+                                        </td>
+                                        <td>
+                                            <span className={`admin-status-badge ${sermon.type === 'video' ? 'status-published' : 'status-pending'}`} style={{ fontSize: '0.7rem', fontWeight: 800 }}>
+                                                {sermon.type.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td className="hide-tablet">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>
+                                                <Clock size={14} />
+                                                {sermon.duration || 'N/A'}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
                                                 <button
+                                                    className="admin-icon-btn hover:text-blue-500 hover:bg-blue-50"
+                                                    title="Play"
+                                                    onClick={() => window.open(sermon.type === 'video' ? sermon.video_url : sermon.audio_url, '_blank')}
+                                                >
+                                                    <Play size={16} />
+                                                </button>
+                                                <button className="admin-icon-btn" title="Edit" onClick={() => handleOpenModal('edit', sermon)}>
+                                                    <Edit2 size={16} />
+                                                </button>
+
+                                                <button
+                                                    ref={activeDropdownId === sermon.id ? dropdownTriggerRef : null}
                                                     className="admin-icon-btn"
                                                     title="More"
                                                     onClick={() => setActiveDropdownId(activeDropdownId === sermon.id ? null : sermon.id)}
@@ -300,24 +342,34 @@ const ManageSermons = () => {
                                                 <ActionDropdown
                                                     isOpen={activeDropdownId === sermon.id}
                                                     onClose={() => setActiveDropdownId(null)}
+                                                    triggerRef={dropdownTriggerRef}
                                                     actions={[
                                                         { label: 'View Details', icon: <Eye size={16} />, onClick: () => handleViewDetails(sermon) },
                                                         {
                                                             label: 'Copy Link', icon: <LinkIcon size={16} />, onClick: () => {
-                                                                navigator.clipboard.writeText(sermon.type === 'video' ? sermon.video_url : sermon.audio_url);
-                                                                alert('Link copied!');
+                                                                const url = sermon.type === 'video' ? sermon.video_url : sermon.audio_url;
+                                                                if (url) {
+                                                                    navigator.clipboard.writeText(url);
+                                                                    showResponse('success', 'Link Copied', 'The media link has been copied to your clipboard.');
+                                                                }
                                                             }
                                                         },
                                                         { label: 'Delete', icon: <Trash2 size={16} />, onClick: () => handleDeleteClick(sermon.id), type: 'danger' },
                                                     ]}
                                                 />
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--admin-text-muted)' }}>
+                                            No sermons found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -392,10 +444,10 @@ const ManageSermons = () => {
                             <div style={{ textAlign: 'right' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-primary)', fontWeight: 700, marginBottom: '0.25rem' }}>
                                     <BookOpen size={16} />
-                                    {viewingSermon.series.toUpperCase()}
+                                    {viewingSermon.series?.toUpperCase() || 'N/A'}
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'flex-end' }}>
-                                    <Clock size={12} /> {viewingSermon.sermon_date} • {viewingSermon.duration}
+                                    <Clock size={12} /> {viewingSermon.sermon_date ? new Date(viewingSermon.sermon_date).toLocaleDateString() : 'N/A'} • {viewingSermon.duration || 'N/A'}
                                 </div>
                             </div>
                         </div>
@@ -573,6 +625,14 @@ const ManageSermons = () => {
                     </div>
                 </form>
             </AdminModal>
+
+            <ResponseModal
+                isOpen={responseModal.isOpen}
+                onClose={() => setResponseModal(prev => ({ ...prev, isOpen: false }))}
+                type={responseModal.type}
+                title={responseModal.title}
+                message={responseModal.message}
+            />
         </AdminLayout>
     );
 };

@@ -18,92 +18,36 @@ import {
     Tag,
     Edit2,
     MoreVertical,
-    Trash2
+    Trash2,
+    AlertCircle
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
 import AdminModal from '../../components/admin/AdminModal';
+import ResponseModal from '../../components/admin/ResponseModal';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const ManageStore = () => {
-    const [products, setProducts] = useState([
-        {
-            id: '1',
-            title: 'The Art of Worship Book',
-            author: 'Rev. Dr. Nick Ezeh',
-            description: 'A comprehensive guide to understanding the biblical principles of worship and intimacy with God.',
-            price: '5000',
-            category: 'Books',
-            status: 'published',
-            image_url: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200',
-            file_url: 'https://storage.example.com/books/art-of-worship.pdf',
-            stock_quantity: 45,
-            is_digital: false,
-            rating: 4.8
-        },
-        {
-            id: '2',
-            title: 'Living in Grace (Audio)',
-            author: 'Rev. Dr. Nick Ezeh',
-            description: 'Experience the message of grace through this powerful audio teaching series.',
-            price: '3500',
-            category: 'Audiobooks',
-            status: 'published',
-            image_url: 'https://images.unsplash.com/photo-1478737270239-2fccd2c40c4a?auto=format&fit=crop&q=80&w=200',
-            file_url: 'https://storage.example.com/audio/grace-series.mp3',
-            stock_quantity: 0,
-            is_digital: true,
-            rating: 4.9
-        },
-        {
-            id: '3',
-            title: 'Faith Foundation Series',
-            author: 'Pst. Mary Jane',
-            description: 'Building a solid foundation for your spiritual life with these core teachings.',
-            price: '7000',
-            category: 'Digital',
-            status: 'draft',
-            image_url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=200',
-            file_url: 'https://storage.example.com/digital/faith-foundation.zip',
-            stock_quantity: 100,
-            is_digital: true,
-            rating: 5.0
-        },
-        {
-            id: '4',
-            title: 'The Prophetic Mantle',
-            author: 'Rev. Dr. Nick Ezeh',
-            description: 'Understanding the prophetic ministry and navigating the spiritual realms.',
-            price: '6500',
-            category: 'Books',
-            status: 'published',
-            image_url: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=200',
-            file_url: '',
-            stock_quantity: 12,
-            is_digital: false,
-            rating: 4.7
-        },
-        {
-            id: '5',
-            title: 'Covenant Secrets',
-            author: 'Rev. Dr. Nick Ezeh',
-            description: 'Unlocking the ancient secrets of covenant wealth and spiritual heritage.',
-            price: '4000',
-            category: 'Books',
-            status: 'draft',
-            image_url: 'https://images.unsplash.com/photo-1532012197367-e43d0e53a8c6?auto=format&fit=crop&q=80&w=200',
-            file_url: '',
-            stock_quantity: 30,
-            is_digital: false,
-            rating: 4.5
-        }
-    ]);
+    const dropdownTriggerRef = useRef(null);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [idToDelete, setIdToDelete] = useState(null);
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [viewingProduct, setViewingProduct] = useState(null);
+
+    // Response Modal State
+    const [responseModal, setResponseModal] = useState({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
 
     // Modal State for Add/Edit
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,20 +66,82 @@ const ManageStore = () => {
         rating: 5.0
     });
 
+    // Filtering State
+    const [filterCategory, setFilterCategory] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(10);
+
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterCategory, debouncedSearchTerm]);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [filterCategory, debouncedSearchTerm]);
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const queryParams = new URLSearchParams();
+            if (filterCategory !== 'all') queryParams.append('category', filterCategory);
+            if (debouncedSearchTerm) queryParams.append('search', debouncedSearchTerm);
+
+            const response = await fetch(`${API_BASE_URL}/products?${queryParams.toString()}`);
+            if (!response.ok) throw new Error('Failed to fetch products');
+            const data = await response.json();
+            setProducts(data);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching products:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const showResponse = (type, title, message) => {
+        setResponseModal({
+            isOpen: true,
+            type,
+            title,
+            message
+        });
+    };
 
     const handleDeleteClick = (id) => {
         setIdToDelete(id);
         setIsDeleteModalOpen(true);
+        setActiveDropdownId(null);
     };
 
-    const confirmDelete = () => {
-        if (idToDelete) {
-            setProducts(prev => prev.filter(item => item.id !== idToDelete));
+    const confirmDelete = async () => {
+        if (!idToDelete) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/products/${idToDelete}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Failed to delete product');
+
+            await fetchProducts();
             setIsDeleteModalOpen(false);
             setIdToDelete(null);
+            showResponse('success', 'Product Deleted', 'The product has been removed from the store.');
+        } catch (err) {
+            showResponse('error', 'Delete Failed', err.message);
         }
     };
 
@@ -180,18 +186,36 @@ const ManageStore = () => {
         }));
     };
 
-    const handleSaveProduct = (e) => {
+    const handleSaveProduct = async (e) => {
         e.preventDefault();
-        if (modalMode === 'create') {
-            const newProduct = {
-                ...formData,
-                id: (products.length + 1).toString(),
-            };
-            setProducts(prev => [newProduct, ...prev]);
-        } else {
-            setProducts(prev => prev.map(item => item.id === formData.id ? formData : item));
+        try {
+            const url = modalMode === 'create'
+                ? `${API_BASE_URL}/products`
+                : `${API_BASE_URL}/products/${formData.id}`;
+
+            const method = modalMode === 'create' ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to save product');
+            }
+
+            await fetchProducts();
+            handleCloseModal();
+            showResponse(
+                'success',
+                modalMode === 'create' ? 'Product Added' : 'Product Updated',
+                `The product "${formData.title}" has been saved successfully.`
+            );
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
         }
-        handleCloseModal();
     };
 
     // Pagination Logic
@@ -230,98 +254,118 @@ const ManageStore = () => {
                                 placeholder="Search products..."
                                 className="admin-input"
                                 style={{ paddingLeft: '2.5rem', width: '100%' }}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" style={{ pointerEvents: 'none' }} />
                         </div>
-                        <select className="admin-select" style={{ width: '100%', maxWidth: '200px', flex: '1 1 140px' }}>
+                        <select
+                            className="admin-select"
+                            style={{ width: '100%', maxWidth: '200px', flex: '1 1 140px' }}
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                        >
                             <option value="all">All Categories</option>
-                            <option value="books">Books</option>
-                            <option value="audiobooks">Audiobooks</option>
-                            <option value="digital">Digital</option>
+                            <option value="Books">Books</option>
+                            <option value="Audiobooks">Audiobooks</option>
+                            <option value="Digital">Digital</option>
+                            <option value="Merchandise">Merchandise</option>
                         </select>
                     </div>
                 </div>
 
                 <div className="admin-table-container">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Product Details</th>
-                                <th className="hide-mobile">Category</th>
-                                <th>Price</th>
-                                <th className="hide-tablet">Stock</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedProducts.map((product) => (
-                                <tr key={product.id}>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <div style={{
-                                                width: '44px',
-                                                height: '44px',
-                                                borderRadius: '12px',
-                                                background: '#f8fafc',
-                                                border: '1px solid var(--admin-border)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                overflow: 'hidden'
-                                            }}>
-                                                {product.image_url ? (
-                                                    <img src={product.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    <ShoppingBag size={20} className="text-slate-400" />
-                                                )}
+                    {loading ? (
+                        <div style={{ padding: '4rem', textAlign: 'center' }}>
+                            <div className="admin-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                            <p style={{ color: 'var(--admin-text-muted)' }}>Loading products...</p>
+                        </div>
+                    ) : error ? (
+                        <div style={{ padding: '4rem', textAlign: 'center' }}>
+                            <AlertCircle size={40} style={{ margin: '0 auto 1rem', color: '#ef4444' }} />
+                            <p style={{ color: '#ef4444', fontWeight: 600 }}>{error}</p>
+                            <button onClick={fetchProducts} className="admin-action-btn-secondary mt-4">Try Again</button>
+                        </div>
+                    ) : (
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Product Details</th>
+                                    <th className="hide-mobile">Category</th>
+                                    <th>Price</th>
+                                    <th className="hide-tablet">Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedProducts.length > 0 ? paginatedProducts.map((product) => (
+                                    <tr key={product.id}>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <div style={{
+                                                    width: '44px',
+                                                    height: '44px',
+                                                    borderRadius: '12px',
+                                                    background: '#f8fafc',
+                                                    border: '1px solid var(--admin-border)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    {product.image_url ? (
+                                                        <img src={product.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <ShoppingBag size={20} className="text-slate-400" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 700 }}>{product.title}</div>
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{product.author}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div style={{ fontWeight: 700 }}>{product.title}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{product.author}</div>
+                                        </td>
+                                        <td className="hide-mobile">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-muted)' }}>
+                                                <Tag size={14} className="text-rose-500" />
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{product.category}</span>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="hide-mobile">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-muted)' }}>
-                                            <Tag size={14} className="text-rose-500" />
-                                            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{product.category}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style={{ fontWeight: 700, color: 'var(--admin-text-main)' }}>
-                                            {formatPrice(product.price)}
-                                        </div>
-                                    </td>
-                                    <td className="hide-tablet">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <div style={{
-                                                padding: '0.25rem 0.6rem',
-                                                borderRadius: '6px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 700,
-                                                background: product.stock_quantity > 10 ? '#f0f9ff' : (product.stock_quantity > 0 ? '#fffbeb' : '#fef2f2'),
-                                                color: product.stock_quantity > 10 ? '#0369a1' : (product.stock_quantity > 0 ? '#92400e' : '#b91c1c'),
-                                                border: '1px solid currentColor',
-                                                opacity: 0.8
-                                            }}>
-                                                {product.stock_quantity}
+                                        </td>
+                                        <td>
+                                            <div style={{ fontWeight: 700, color: 'var(--admin-text-main)' }}>
+                                                {formatPrice(product.price)}
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`admin-status-badge status-${product.status}`} style={{ fontSize: '0.7rem', fontWeight: 800 }}>
-                                            {product.status.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
-                                            <button className="admin-icon-btn" title="Edit" onClick={() => handleOpenModal('edit', product)}>
-                                                <Edit2 size={16} />
-                                            </button>
+                                        </td>
+                                        <td className="hide-tablet">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <div style={{
+                                                    padding: '0.25rem 0.6rem',
+                                                    borderRadius: '6px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700,
+                                                    background: product.stock_quantity > 10 ? '#f0f9ff' : (product.stock_quantity > 0 ? '#fffbeb' : '#fef2f2'),
+                                                    color: product.stock_quantity > 10 ? '#0369a1' : (product.stock_quantity > 0 ? '#92400e' : '#b91c1c'),
+                                                    border: '1px solid currentColor',
+                                                    opacity: 0.8
+                                                }}>
+                                                    {product.stock_quantity}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`admin-status-badge status-${product.status}`} style={{ fontSize: '0.7rem', fontWeight: 800 }}>
+                                                {product.status.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
+                                                <button className="admin-icon-btn" title="Edit" onClick={() => handleOpenModal('edit', product)}>
+                                                    <Edit2 size={16} />
+                                                </button>
 
-                                            <div style={{ position: 'relative' }}>
                                                 <button
+                                                    ref={activeDropdownId === product.id ? dropdownTriggerRef : null}
                                                     className="admin-icon-btn"
                                                     title="More"
                                                     onClick={() => setActiveDropdownId(activeDropdownId === product.id ? null : product.id)}
@@ -332,24 +376,31 @@ const ManageStore = () => {
                                                 <ActionDropdown
                                                     isOpen={activeDropdownId === product.id}
                                                     onClose={() => setActiveDropdownId(null)}
+                                                    triggerRef={dropdownTriggerRef}
                                                     actions={[
                                                         { label: 'View Details', icon: <Eye size={16} />, onClick: () => handleViewDetails(product) },
                                                         {
                                                             label: 'Copy Link', icon: <LinkIcon size={16} />, onClick: () => {
                                                                 navigator.clipboard.writeText(window.location.origin + '/store/' + product.id);
-                                                                alert('Link copied!');
+                                                                showResponse('success', 'Link Copied', 'The product link has been copied to your clipboard.');
                                                             }
                                                         },
                                                         { label: 'Delete', icon: <Trash2 size={16} />, onClick: () => handleDeleteClick(product.id), type: 'danger' },
                                                     ]}
                                                 />
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--admin-text-muted)' }}>
+                                            No products found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -643,6 +694,14 @@ const ManageStore = () => {
                     </div>
                 </form>
             </AdminModal>
+
+            <ResponseModal
+                isOpen={responseModal.isOpen}
+                onClose={() => setResponseModal(prev => ({ ...prev, isOpen: false }))}
+                type={responseModal.type}
+                title={responseModal.title}
+                message={responseModal.message}
+            />
         </AdminLayout>
     );
 };

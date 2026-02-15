@@ -15,12 +15,13 @@ import {
     User,
     Tag
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import AdminModal from '../../components/admin/AdminModal';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
 
 const ManageLocations = () => {
+    const dropdownTriggerRef = useRef(null);
     // Districts State
     const [districts, setDistricts] = useState([
         { id: '1', name: 'Lagos District 1', headPastor: 'Pst. John Doe' },
@@ -338,22 +339,22 @@ const ManageLocations = () => {
                                                 <button className="admin-icon-btn" title="Edit" onClick={() => handleOpenBranchModal('edit', branch)}>
                                                     <Edit2 size={16} />
                                                 </button>
-                                                <div style={{ position: 'relative' }}>
-                                                    <button
-                                                        className="admin-icon-btn"
-                                                        onClick={() => setActiveDropdownId(activeDropdownId === branch.id ? null : branch.id)}
-                                                    >
-                                                        <MoreVertical size={16} />
-                                                    </button>
-                                                    <ActionDropdown
-                                                        isOpen={activeDropdownId === branch.id}
-                                                        onClose={() => setActiveDropdownId(null)}
-                                                        actions={[
-                                                            { label: 'View on Map', icon: <Globe size={16} />, onClick: () => window.open(branch.map_url, '_blank') },
-                                                            { label: 'Delete Branch', icon: <Trash2 size={16} />, onClick: () => handleDeleteClick('branch', branch.id), type: 'danger' }
-                                                        ]}
-                                                    />
-                                                </div>
+                                                <button
+                                                    ref={activeDropdownId === branch.id ? dropdownTriggerRef : null}
+                                                    className="admin-icon-btn"
+                                                    onClick={() => setActiveDropdownId(activeDropdownId === branch.id ? null : branch.id)}
+                                                >
+                                                    <MoreVertical size={16} />
+                                                </button>
+                                                <ActionDropdown
+                                                    isOpen={activeDropdownId === branch.id}
+                                                    onClose={() => setActiveDropdownId(null)}
+                                                    triggerRef={dropdownTriggerRef}
+                                                    actions={[
+                                                        { label: 'View on Map', icon: <Globe size={16} />, onClick: () => window.open(branch.map_url, '_blank') },
+                                                        { label: 'Delete Branch', icon: <Trash2 size={16} />, onClick: () => handleDeleteClick('branch', branch.id), type: 'danger' }
+                                                    ]}
+                                                />
                                             </div>
                                         </td>
                                     </tr>

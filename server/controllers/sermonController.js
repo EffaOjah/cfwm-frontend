@@ -3,8 +3,8 @@ const Sermon = require('../models/sermon.js');
 const sermonController = {
     getSermons: async (req, res) => {
         try {
-            const { type } = req.query;
-            const sermons = await Sermon.getAll(type);
+            const { type, search } = req.query;
+            const sermons = await Sermon.getAll(type, search);
             res.status(200).json(sermons);
         } catch (error) {
             res.status(500).json({ message: 'Error fetching sermons', error: error.message });

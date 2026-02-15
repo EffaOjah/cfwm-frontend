@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Topbar from '../../components/admin/Topbar';
 import {
@@ -11,103 +12,111 @@ import {
     Share2,
     Eye
 } from 'lucide-react';
-import { useState } from 'react';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
 import AdminModal from '../../components/admin/AdminModal';
+import ResponseModal from '../../components/admin/ResponseModal';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const ManageTestimonies = () => {
-    const [testimonies, setTestimonies] = useState([
-        {
-            id: '1',
-            author: 'Sarah Johnson',
-            category: 'Healing',
-            content: 'I want to thank God for His healing power. For three years, I struggled with a severe heart condition that the doctors said required surgery. During the last Divine Encounter service, the man of God spoke a word about someone with a heart condition being healed. I claimed it, and when I went back for my checkup, the specialists were shocked to find my heart perfectly normal without any surgery! Praise the Lord!',
-            status: 'published',
-            date: '2023-10-24'
-        },
-        {
-            id: '2',
-            author: 'Michael Chen',
-            category: 'Provision',
-            content: 'I was out of a job for 18 months and things were very difficult for my family. We barely had enough to eat, but we kept trusting in God. Three weeks ago, I received three different job offers in one day, all with better salaries than my previous role. God truly provides in His own time! Today, I am gainfully employed and my family is flourishing.',
-            status: 'pending',
-            date: '2023-10-25'
-        },
-        {
-            id: '3',
-            author: 'Amara Okeke',
-            category: 'Family',
-            content: 'My family was on the verge of breaking apart. There was so much strife and misunderstanding between my husband and I. After attending the marriage seminar organized by the church, God touched our hearts. We learned to communicate and forgive. Today, our home is a haven of peace and love. Thank you Jesus for restoring my marriage.',
-            status: 'published',
-            date: '2023-10-23'
-        },
-        {
-            id: '4',
-            author: 'David Miller',
-            category: 'Finance',
-            content: 'I was drowning in debt and my business was failing. I decided to start honoring God with my tithes and offerings faithfully despite the lack. Miraculously, a client I hadn\'t heard from in years called me for a major project that cleared all my debts and gave my business a fresh start. God is a rewarder of those who seek Him!',
-            status: 'rejected',
-            date: '2023-10-22'
-        },
-        {
-            id: '5',
-            author: 'Blessing Udoh',
-            category: 'Fruit of the Womb',
-            content: 'After 10 years of marriage without a child, people had started mocking us. We went to various hospitals but there was no hope. We joined the prayer chain for "The Fruitful Vine" program. Six months later, I am here to testify that I am 5 months pregnant with twins! What God cannot do does not exist!',
-            status: 'pending',
-            date: '2023-10-21'
-        },
-        {
-            id: '6',
-            author: 'Chidi Okafor',
-            category: 'Protection',
-            content: 'I was traveling to the village last week when armed robbers attacked our bus. They were shooting sporadically, and a bullet actually hit my window but it didn\'t penetrate. It felt like an invisible shield was around me. No one in our bus was hurt, though the bus itself was riddled with bullets. I am truly grateful for God\'s protection over my life.',
-            status: 'published',
-            date: '2023-10-20'
-        },
-        {
-            id: '7',
-            author: 'Esther Williams',
-            category: 'Promotion',
-            content: 'I have been in the same position for over 7 years with no promotion. I felt stuck and overlooked. I decided to sow a sacrificial seed and prayed for a breakthrough. Last Friday, I was not only promoted but I was leapfrogged over two seniors to become the Head of my Department! God has truly honored my faith.',
-            status: 'pending',
-            date: '2023-10-19'
-        },
-    ]);
+    const dropdownTriggerRef = useRef(null);
+
+    const [testimonies, setTestimonies] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [idToDelete, setIdToDelete] = useState(null);
+
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [viewingTestimony, setViewingTestimony] = useState(null);
 
+    // Response Modal State
+    const [responseModal, setResponseModal] = useState({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
+
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(10);
+
+    useEffect(() => {
+        fetchTestimonies();
+    }, []);
+
+    const fetchTestimonies = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/testimonies/all`);
+            if (!response.ok) throw new Error('Failed to fetch testimonies');
+            const data = await response.json();
+            setTestimonies(data);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching testimonies:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const showResponse = (type, title, message) => {
+        setResponseModal({
+            isOpen: true,
+            type,
+            title,
+            message
+        });
+    };
 
     const handleDeleteClick = (id) => {
         setIdToDelete(id);
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = () => {
-        if (idToDelete) {
-            setTestimonies(prev => prev.filter(item => item.id !== idToDelete));
+    const confirmDelete = async () => {
+        if (!idToDelete) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/testimonies/${idToDelete}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Failed to delete testimony');
+
+            await fetchTestimonies();
             setIsDeleteModalOpen(false);
             setIdToDelete(null);
+            showResponse('success', 'Testimony Deleted', 'The testimony has been permanently removed.');
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
         }
     };
 
-    const handleStatusUpdate = (id, newStatus) => {
-        setTestimonies(prev => prev.map(item =>
-            item.id === id ? { ...item, status: newStatus } : item
-        ));
+    const handleStatusUpdate = async (testimony, newStatus) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/testimonies/${testimony.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...testimony,
+                    status: newStatus
+                })
+            });
+            if (!response.ok) throw new Error('Failed to update status');
+
+            await fetchTestimonies();
+            showResponse('success', 'Status Updated', `Testimony is now ${newStatus}.`);
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
+        }
     };
 
     const handleCopyContent = (content) => {
         navigator.clipboard.writeText(content);
-        alert('Testimony content copied!');
+        showResponse('success', 'Copied', 'Testimony content copied to clipboard.');
     };
 
     const handleViewDetails = (testimony) => {
@@ -132,107 +141,97 @@ const ManageTestimonies = () => {
             <Topbar title="Manage Testimonies" />
 
             <div className="admin-card-container">
-                <div className="admin-card-header">
-                    <div className="admin-filter-group" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-                        {/* <div className="relative" style={{ flex: '1 1 280px', minWidth: '0' }}>
-                            <input
-                                type="text"
-                                placeholder="Search stories..."
-                                className="admin-input"
-                                style={{ paddingLeft: '2.5rem', width: '100%' }}
-                            />
-                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        </div> */}
-                        <select className="admin-select" style={{ width: '100%', maxWidth: '200px', flex: '1 1 140px' }}>
-                            <option value="all">All Categories</option>
-                            <option value="healing">Healing</option>
-                            <option value="provision">Provision</option>
-                            <option value="family">Family</option>
-                            <option value="fruit">Fruit of the Womb</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div className="admin-table-container">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Author & Category</th>
-                                <th>Content Snippet</th>
-                                <th className="hide-mobile">Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedTestimonies.map((item) => (
-                                <tr key={item.id}>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <User size={16} className="text-slate-400" />
+                    {loading ? (
+                        <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                            <div className="admin-loader">Loading testimonies...</div>
+                        </div>
+                    ) : error ? (
+                        <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}>
+                            <p>Error: {error}</p>
+                            <button className="admin-action-btn-secondary" onClick={fetchTestimonies} style={{ marginTop: '1rem' }}>Retry</button>
+                        </div>
+                    ) : testimonies.length === 0 ? (
+                        <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                            <p>No testimonies found yet.</p>
+                        </div>
+                    ) : (
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Testimony Content</th>
+                                    <th className="hide-mobile">Date Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedTestimonies.map((item) => (
+                                    <tr key={item.id}>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <User size={16} className="text-slate-400" />
+                                                </div>
+                                                <div style={{ fontWeight: 700 }}>{item.name}</div>
                                             </div>
-                                            <div>
-                                                <div style={{ fontWeight: 700 }}>{item.author}</div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--admin-primary)', fontWeight: 600 }}>{item.category.toUpperCase()}</div>
+                                        </td>
+                                        <td>
+                                            <div className="text-slate-500 italic" style={{ maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                "{item.content}"
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="text-slate-500 italic" style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            "{item.content}"
-                                        </div>
-                                    </td>
-                                    <td className="hide-mobile">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-muted)' }}>
-                                            <Clock size={12} />
-                                            <span style={{ fontSize: '0.8rem' }}>{item.date}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`admin-status-badge status-${item.status}`}>
-                                            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
-                                            {item.status === 'pending' && (
-                                                <>
-                                                    <button
-                                                        className="admin-icon-btn hover:text-emerald-600 hover:bg-emerald-50"
-                                                        title="Approve"
-                                                        onClick={() => handleStatusUpdate(item.id, 'published')}
-                                                    >
-                                                        <Check size={16} />
-                                                    </button>
-                                                    <button
-                                                        className="admin-icon-btn hover:text-rose-600 hover:bg-rose-50"
-                                                        title="Reject"
-                                                        onClick={() => handleStatusUpdate(item.id, 'rejected')}
-                                                    >
-                                                        <X size={16} />
-                                                    </button>
-                                                </>
-                                            )}
-                                            <button
-                                                className="admin-icon-btn hover:text-red-500 hover:bg-red-50"
-                                                title="Delete"
-                                                onClick={() => handleDeleteClick(item.id)}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                            <div style={{ position: 'relative' }}>
+                                        </td>
+                                        <td className="hide-mobile">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-muted)' }}>
+                                                <Clock size={12} />
+                                                <span style={{ fontSize: '0.8rem' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A'}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`admin-status-badge status-${item.status}`}>
+                                                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
+                                                {item.status === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            className="admin-icon-btn hover:text-emerald-600 hover:bg-emerald-50"
+                                                            title="Approve"
+                                                            onClick={() => handleStatusUpdate(item, 'approved')}
+                                                        >
+                                                            <Check size={16} />
+                                                        </button>
+                                                        <button
+                                                            className="admin-icon-btn hover:text-rose-600 hover:bg-rose-50"
+                                                            title="Reject"
+                                                            onClick={() => handleStatusUpdate(item, 'rejected')}
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </>
+                                                )}
                                                 <button
+                                                    className="admin-icon-btn hover:text-red-500 hover:bg-red-50"
+                                                    title="Delete"
+                                                    onClick={() => handleDeleteClick(item.id)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                <button
+                                                    ref={activeDropdownId === item.id ? dropdownTriggerRef : null}
                                                     className="admin-icon-btn"
                                                     title="More"
                                                     onClick={() => setActiveDropdownId(activeDropdownId === item.id ? null : item.id)}
                                                 >
                                                     <MoreVertical size={16} />
                                                 </button>
-
                                                 <ActionDropdown
                                                     isOpen={activeDropdownId === item.id}
                                                     onClose={() => setActiveDropdownId(null)}
+                                                    triggerRef={dropdownTriggerRef}
                                                     actions={[
                                                         { label: 'View Details', icon: <Eye size={16} />, onClick: () => handleViewDetails(item) },
                                                         { label: 'Copy Content', icon: <Share2 size={16} />, onClick: () => handleCopyContent(item.content) },
@@ -240,12 +239,12 @@ const ManageTestimonies = () => {
                                                     ]}
                                                 />
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -306,18 +305,15 @@ const ManageTestimonies = () => {
                         <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
                                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--admin-text)', marginBottom: '0.25rem' }}>
-                                    {viewingTestimony.author}
+                                    {viewingTestimony.name}
                                 </h3>
                                 <span className={`admin-status-badge status-${viewingTestimony.status}`}>
                                     {viewingTestimony.status.toUpperCase()}
                                 </span>
                             </div>
                             <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>
-                                    {viewingTestimony.category.toUpperCase()}
-                                </div>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                                    <Clock size={12} /> {viewingTestimony.date}
+                                    <Clock size={12} /> {viewingTestimony.created_at ? new Date(viewingTestimony.created_at).toLocaleDateString() : 'N/A'}
                                 </div>
                             </div>
                         </div>
@@ -339,7 +335,7 @@ const ManageTestimonies = () => {
                                 <button
                                     className="admin-action-btn"
                                     onClick={() => {
-                                        handleStatusUpdate(viewingTestimony.id, 'published');
+                                        handleStatusUpdate(viewingTestimony, 'approved');
                                         setIsDetailsModalOpen(false);
                                     }}
                                 >
@@ -350,7 +346,15 @@ const ManageTestimonies = () => {
                     </div>
                 )}
             </AdminModal>
-        </AdminLayout>
+
+            <ResponseModal
+                isOpen={responseModal.isOpen}
+                onClose={() => setResponseModal(prev => ({ ...prev, isOpen: false }))}
+                type={responseModal.type}
+                title={responseModal.title}
+                message={responseModal.message}
+            />
+        </AdminLayout >
     );
 };
 

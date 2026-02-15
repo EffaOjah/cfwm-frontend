@@ -3,8 +3,8 @@ const Product = require('../models/product.js');
 const productController = {
     getProducts: async (req, res) => {
         try {
-            const { category } = req.query;
-            const products = await Product.getAll(category);
+            const { category, search } = req.query;
+            const products = await Product.getAll(category, search);
             res.status(200).json(products);
         } catch (error) {
             res.status(500).json({ message: 'Error fetching products', error: error.message });

@@ -9,11 +9,11 @@ const PrayerRequest = {
 
     create: async (data) => {
         const id = crypto.randomUUID();
-        const { name, phone, request_details, is_confidential } = data;
+        const { name, phone, topic, request_details, is_confidential } = data;
         await pool.query(
-            `INSERT INTO prayer_requests (id, name, phone, request_details, is_confidential) 
-             VALUES (?, ?, ?, ?, ?)`,
-            [id, name, phone, request_details, is_confidential || false]
+            `INSERT INTO prayer_requests (id, name, phone, topic, request_details, is_confidential) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [id, name, phone, topic, request_details, is_confidential || false]
         );
         return id;
     },

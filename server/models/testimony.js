@@ -19,19 +19,19 @@ const Testimony = {
 
     create: async (testimonyData) => {
         const id = crypto.randomUUID();
-        const { name, content, category } = testimonyData;
+        const { name, content } = testimonyData;
         await pool.query(
-            'INSERT INTO testimonies (id, name, content, category) VALUES (?, ?, ?, ?)',
-            [id, name, content, category]
+            'INSERT INTO testimonies (id, name, content, status) VALUES (?, ?, ?, "pending")',
+            [id, name, content]
         );
         return id;
     },
 
     update: async (id, testimonyData) => {
-        const { name, content, category, status } = testimonyData;
+        const { name, content, status } = testimonyData;
         await pool.query(
-            'UPDATE testimonies SET name = ?, content = ?, category = ?, status = ? WHERE id = ?',
-            [name, content, category, status, id]
+            'UPDATE testimonies SET name = ?, content = ?, status = ? WHERE id = ?',
+            [name, content, status, id]
         );
     },
 

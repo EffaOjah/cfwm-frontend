@@ -2,13 +2,24 @@ const { pool } = require('../config/database.js');
 const crypto = require('crypto');
 
 const Sermon = {
-    getAll: async (type = null) => {
+    getAll: async (type = null, search = '') => {
         let sql = 'SELECT * FROM sermons';
         const params = [];
+        const conditions = [];
 
-        if (type) {
-            sql += ' WHERE type = ?';
+        if (type && type !== 'all') {
+            conditions.push('type = ?');
             params.push(type);
+        }
+
+        if (search) {
+            conditions.push('(title LIKE ? OR speaker LIKE ? OR series LIKE ?)');
+            const searchPattern = `%${search}%`;
+            params.push(searchPattern, searchPattern, searchPattern);
+        }
+
+        if (conditions.length > 0) {
+            sql += ' WHERE ' + conditions.join(' AND ');
         }
 
         sql += ' ORDER BY sermon_date DESC';
