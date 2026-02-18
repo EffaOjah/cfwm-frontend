@@ -15,149 +15,191 @@ import {
     User,
     Tag
 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AdminModal from '../../components/admin/AdminModal';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
+import ResponseModal from '../../components/admin/ResponseModal';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const ManageLocations = () => {
     const dropdownTriggerRef = useRef(null);
-    // Districts State
-    const [districts, setDistricts] = useState([
-        { id: '1', name: 'Lagos District 1', headPastor: 'Pst. John Doe' },
-        { id: '2', name: 'Abuja Central District', headPastor: 'Pst. Samuel Okoro' },
-        { id: '3', name: 'Port Harcourt District', headPastor: 'Pst. Matthew Mark' },
-    ]);
+    const [districts, setDistricts] = useState([]);
+    const [branches, setBranches] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Branches State
-    const [branches, setBranches] = useState([
-        {
-            id: '1',
-            districtId: '1',
-            name: 'Headquarters',
-            pastor: 'Rev. Dr. Nick Ezeh',
-            address: '38 Abasi Obori Street, Off Uwanse Street, Calabar',
-            phone: '+234 812 345 6789',
-            map_url: 'https://maps.google.com/?q=Calabar',
-            image_url: 'https://images.unsplash.com/photo-1548625361-1396a33db9ad?auto=format&fit=crop&q=80&w=400',
-            isHQ: true
-        },
-        {
-            id: '2',
-            districtId: '1',
-            name: 'Ikeja Branch',
-            pastor: 'Pst. Michael Smith',
-            address: '45 Allen Avenue, Ikeja, Lagos',
-            phone: '+234 801 111 1111',
-            map_url: 'https://maps.google.com/?q=Ikeja',
-            image_url: 'https://images.unsplash.com/photo-1510924948940-0255869dbbf3?auto=format&fit=crop&q=80&w=400',
-            isHQ: false
-        },
-        {
-            id: '3',
-            districtId: '1',
-            name: 'Surulere Branch',
-            pastor: 'Pst. David Coleman',
-            address: '12 Stadium Road, Surulere, Lagos',
-            phone: '+234 801 222 2222',
-            map_url: 'https://maps.google.com/?q=Surulere',
-            image_url: 'https://images.unsplash.com/photo-1548625361-1396a33db9ad?auto=format&fit=crop&q=80&w=400',
-            isHQ: false
-        },
-        {
-            id: '4',
-            districtId: '2',
-            name: 'Garki Branch',
-            pastor: 'Pst. Solomon King',
-            address: 'Plot 55, Garki Area 3, Abuja',
-            phone: '+234 802 444 4444',
-            map_url: 'https://maps.google.com/?q=Garki+Abuja',
-            image_url: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=400',
-            isHQ: false
-        }
-    ]);
-
-    const [selectedDistrictId, setSelectedDistrictId] = useState('1');
+    const [selectedDistrictId, setSelectedDistrictId] = useState(null);
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null); // { type: 'district' | 'branch', id: string }
 
+    // Response Modal State
+    const [responseModal, setResponseModal] = useState({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
+
     // Modal States
     const [isDistrictModalOpen, setIsDistrictModalOpen] = useState(false);
     const [districtModalMode, setDistrictModalMode] = useState('create');
-    const [districtForm, setDistrictForm] = useState({ id: '', name: '', headPastor: '' });
+    const [districtForm, setDistrictForm] = useState({ id: '', name: '', head_pastor: '' });
 
     const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
     const [branchModalMode, setBranchModalMode] = useState('create');
     const [branchForm, setBranchForm] = useState({
         id: '',
-        districtId: '',
+        district_id: '',
         name: '',
         pastor: '',
         address: '',
         phone: '',
         map_url: '',
         image_url: '',
-        isHQ: false
+        is_headquarters: false
     });
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
 
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/locations/districts`);
+            if (!response.ok) throw new Error('Failed to fetch data');
+            const data = await response.json();
+
+            setDistricts(data);
+
+            // Flatten all branches into one state for easier management if needed, 
+            // though they are currently nested in districts from getDistrictsWithBranches
+            const allBranches = data.flatMap(d => d.branches || []);
+            setBranches(allBranches);
+
+            if (data.length > 0 && !selectedDistrictId) {
+                setSelectedDistrictId(data[0].id);
+            }
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching locations:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const showResponse = (type, title, message) => {
+        setResponseModal({
+            isOpen: true,
+            type,
+            title,
+            message
+        });
+    };
+
     // Handlers for Districts
     const handleOpenDistrictModal = (mode, district = null) => {
         setDistrictModalMode(mode);
         if (mode === 'edit' && district) {
-            setDistrictForm(district);
+            setDistrictForm({
+                id: district.id,
+                name: district.name,
+                head_pastor: district.head_pastor
+            });
         } else {
-            setDistrictForm({ id: '', name: '', headPastor: '' });
+            setDistrictForm({ id: '', name: '', head_pastor: '' });
         }
         setIsDistrictModalOpen(true);
     };
 
-    const handleSaveDistrict = (e) => {
+    const handleSaveDistrict = async (e) => {
         e.preventDefault();
-        if (districtModalMode === 'create') {
-            const newDistrict = { ...districtForm, id: Date.now().toString() };
-            setDistricts([...districts, newDistrict]);
-        } else {
-            setDistricts(districts.map(d => d.id === districtForm.id ? districtForm : d));
+        try {
+            const url = districtModalMode === 'create'
+                ? `${API_BASE_URL}/locations/districts`
+                : `${API_BASE_URL}/locations/districts/${districtForm.id}`;
+            const method = districtModalMode === 'create' ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: districtForm.name,
+                    head_pastor: districtForm.head_pastor
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to save district');
+
+            await fetchData();
+            setIsDistrictModalOpen(false);
+            showResponse('success', `District ${districtModalMode === 'create' ? 'Created' : 'Updated'}`, `The district has been ${districtModalMode === 'create' ? 'added to' : 'updated in'} the system.`);
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
         }
-        setIsDistrictModalOpen(false);
     };
 
     // Handlers for Branches
     const handleOpenBranchModal = (mode, branch = null) => {
         setBranchModalMode(mode);
         if (mode === 'edit' && branch) {
-            setBranchForm(branch);
+            setBranchForm({
+                id: branch.id,
+                district_id: branch.district_id,
+                name: branch.name,
+                pastor: branch.pastor,
+                address: branch.address,
+                phone: branch.phone,
+                map_url: branch.map_url || '',
+                image_url: branch.image_url || '',
+                is_headquarters: !!branch.is_headquarters
+            });
         } else {
             setBranchForm({
                 id: '',
-                districtId: selectedDistrictId,
+                district_id: selectedDistrictId,
                 name: '',
                 pastor: '',
                 address: '',
                 phone: '',
                 map_url: '',
                 image_url: '',
-                isHQ: false
+                is_headquarters: false
             });
         }
         setIsBranchModalOpen(true);
         setActiveDropdownId(null);
     };
 
-    const handleSaveBranch = (e) => {
+    const handleSaveBranch = async (e) => {
         e.preventDefault();
-        if (branchModalMode === 'create') {
-            const newBranch = { ...branchForm, id: Date.now().toString() };
-            setBranches([...branches, newBranch]);
-        } else {
-            setBranches(branches.map(b => b.id === branchForm.id ? branchForm : b));
+        try {
+            const url = branchModalMode === 'create'
+                ? `${API_BASE_URL}/locations/branches`
+                : `${API_BASE_URL}/locations/branches/${branchForm.id}`;
+            const method = branchModalMode === 'create' ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(branchForm)
+            });
+
+            if (!response.ok) throw new Error('Failed to save branch');
+
+            await fetchData();
+            setIsBranchModalOpen(false);
+            showResponse('success', `Branch ${branchModalMode === 'create' ? 'Created' : 'Updated'}`, `The branch has been ${branchModalMode === 'create' ? 'added to' : 'updated in'} the system.`);
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
         }
-        setIsBranchModalOpen(false);
     };
 
     const handleDeleteClick = (type, id) => {
@@ -166,24 +208,30 @@ const ManageLocations = () => {
         setActiveDropdownId(null);
     };
 
-    const confirmDelete = () => {
-        if (itemToDelete) {
-            if (itemToDelete.type === 'district') {
-                setDistricts(districts.filter(d => d.id !== itemToDelete.id));
-                if (selectedDistrictId === itemToDelete.id) {
-                    setSelectedDistrictId(districts.find(d => d.id !== itemToDelete.id)?.id || null);
-                }
-            } else {
-                setBranches(branches.filter(b => b.id !== itemToDelete.id));
-            }
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+
+        try {
+            const endpoint = itemToDelete.type === 'district' ? 'districts' : 'branches';
+            const response = await fetch(`${API_BASE_URL}/locations/${endpoint}/${itemToDelete.id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error(`Failed to delete ${itemToDelete.type}`);
+
+            await fetchData();
             setIsDeleteModalOpen(false);
+            const deletedType = itemToDelete.type;
             setItemToDelete(null);
+            showResponse('success', `${deletedType.charAt(0).toUpperCase() + deletedType.slice(1)} Deleted`, `The ${deletedType} has been permanently removed.`);
+        } catch (err) {
+            showResponse('error', 'Action Failed', err.message);
         }
     };
 
     // Derived Data
     const selectedDistrict = districts.find(d => d.id === selectedDistrictId);
-    const filteredBranches = branches.filter(b => b.districtId === selectedDistrictId);
+    const filteredBranches = branches.filter(b => b.district_id === selectedDistrictId);
 
     // Pagination Logic
     const totalPages = Math.ceil(filteredBranches.length / itemsPerPage);
@@ -197,6 +245,12 @@ const ManageLocations = () => {
                 actionLabel="Add District"
                 onAction={() => handleOpenDistrictModal('create')}
             />
+
+            {error && (
+                <div style={{ padding: '1rem', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', margin: '0 1.5rem 1rem' }}>
+                    {error}
+                </div>
+            )}
 
             <div className="admin-grid-split">
                 {/* Districts Section */}
@@ -236,7 +290,7 @@ const ManageLocations = () => {
                                         {district.name}
                                     </p>
                                     <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', margin: 0 }}>
-                                        {district.headPastor}
+                                        {district.head_pastor}
                                     </p>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -248,7 +302,7 @@ const ManageLocations = () => {
                                         padding: '0.2rem 0.6rem',
                                         borderRadius: '100px'
                                     }}>
-                                        {branches.filter(b => b.districtId === district.id).length} Branches
+                                        {branches.filter(b => b.district_id === district.id).length} Branches
                                     </span>
                                     <button
                                         className="admin-icon-btn"
@@ -313,14 +367,14 @@ const ManageLocations = () => {
                                                     width: '40px',
                                                     height: '40px',
                                                     borderRadius: '10px',
-                                                    background: branch.isHQ ? '#fee2e2' : '#f8fafc',
-                                                    color: branch.isHQ ? 'var(--admin-primary)' : '#64748b',
+                                                    background: branch.is_headquarters ? '#fee2e2' : '#f8fafc',
+                                                    color: branch.is_headquarters ? 'var(--admin-primary)' : '#64748b',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     border: '1px solid var(--admin-border)'
                                                 }}>
-                                                    {branch.isHQ ? <Home size={18} /> : <MapPin size={18} />}
+                                                    {branch.is_headquarters ? <Home size={18} /> : <MapPin size={18} />}
                                                 </div>
                                                 <div>
                                                     <p style={{ fontWeight: 800, margin: 0 }}>{branch.name}</p>
@@ -427,8 +481,8 @@ const ManageLocations = () => {
                             type="text"
                             className="admin-input"
                             required
-                            value={districtForm.headPastor}
-                            onChange={(e) => setDistrictForm({ ...districtForm, headPastor: e.target.value })}
+                            value={districtForm.head_pastor}
+                            onChange={(e) => setDistrictForm({ ...districtForm, head_pastor: e.target.value })}
                             placeholder="e.g., Pst. John Doe"
                         />
                     </div>
@@ -511,8 +565,8 @@ const ManageLocations = () => {
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
                             <input
                                 type="checkbox"
-                                checked={branchForm.isHQ}
-                                onChange={(e) => setBranchForm({ ...branchForm, isHQ: e.target.checked })}
+                                checked={branchForm.is_headquarters}
+                                onChange={(e) => setBranchForm({ ...branchForm, is_headquarters: e.target.checked })}
                                 style={{ width: '18px', height: '18px', accentColor: 'var(--admin-primary)' }}
                             />
                             Is this the Headquarters?
@@ -535,6 +589,14 @@ const ManageLocations = () => {
                 title={`Delete ${itemToDelete?.type === 'district' ? 'District' : 'Branch'}`}
                 message={`Are you sure you want to delete this ${itemToDelete?.type}? This action cannot be undone.`}
                 type="danger"
+            />
+
+            <ResponseModal
+                isOpen={responseModal.isOpen}
+                onClose={() => setResponseModal(prev => ({ ...prev, isOpen: false }))}
+                type={responseModal.type}
+                title={responseModal.title}
+                message={responseModal.message}
             />
         </AdminLayout>
     );

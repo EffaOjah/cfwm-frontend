@@ -16,7 +16,7 @@
     font-family: var(--font-heading, sans-serif);
 }
 
-.testimony-card {
+.vmix-container .testimony-card {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;

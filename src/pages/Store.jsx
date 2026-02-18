@@ -1,76 +1,53 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ShoppingCart, Filter, Book, Headphones, Star, ChevronRight, ChevronLeft, Plus } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import './Store.css';
 import { useCart, CURRENCIES } from '../context/CartContext';
 
-const PRODUCTS = [
-    {
-        id: 1,
-        title: "The Power of Prayer",
-        author: "Rev. Dr. Nick Ezeh",
-        price: 15.00,
-        type: "book",
-        description: "Unlock the divine secrets of effective communication with God. A guide to transforming your spiritual life.",
-        color: "linear-gradient(135deg, #1e3a8a, #3b82f6)", // Deep Blue
-        rating: 5
-    },
-    {
-        id: 2,
-        title: "Walking in Dominion",
-        author: "Rev. Dr. Nick Ezeh",
-        price: 12.50,
-        type: "book",
-        description: "Discover your authority as a believer and how to exercise dominion over every circumstance.",
-        color: "linear-gradient(135deg, #7c2d12, #ea580c)", // Burnt Orange
-        rating: 5
-    },
-    {
-        id: 3,
-        title: "Kingdom Principles (Audio)",
-        author: "Rev. Dr. Nick Ezeh",
-        price: 9.99,
-        type: "audio",
-        description: "An audio series teaching the foundational principles that govern the Kingdom of God.",
-        color: "linear-gradient(135deg, #581c87, #a855f7)", // Purple
-        rating: 4.5
-    },
-    {
-        id: 4,
-        title: "The Holy Spirit & You",
-        author: "Rev. Dr. Nick Ezeh",
-        price: 18.00,
-        type: "book",
-        description: "A comprehensive study on the person, power, and presence of the Holy Spirit in a believer's life.",
-        color: "linear-gradient(135deg, #064e3b, #10b981)", // Emerald
-        rating: 5
-    },
-    {
-        id: 5,
-        title: "Faith That Works (Audio)",
-        author: "Rev. Dr. Nick Ezeh",
-        price: 8.50,
-        type: "audio",
-        description: "Listen on the go: Practical teachings on how to activate your faith for daily victories.",
-        color: "linear-gradient(135deg, #be123c, #fb7185)", // Rose
-        rating: 4
-    },
-    {
-        id: 6,
-        title: "Understanding Grace",
-        author: "Rev. Dr. Nick Ezeh",
-        price: 14.00,
-        type: "book",
-        description: "Dive deep into the unmerited favor of God and how it empowers you for righteous living.",
-        color: "linear-gradient(135deg, #1f2937, #4b5563)", // Dark Grey
-        rating: 5
-    }
-];
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+const typeToGradient = (type = '', title = '') => {
+    const gradients = {
+        book: ['linear-gradient(135deg, #1e3a8a, #3b82f6)', 'linear-gradient(135deg, #7c2d12, #ea580c)', 'linear-gradient(135deg, #064e3b, #10b981)'],
+        audio: ['linear-gradient(135deg, #581c87, #a855f7)', 'linear-gradient(135deg, #be123c, #fb7185)', 'linear-gradient(135deg, #1f2937, #4b5563)']
+    };
+
+    const typeList = gradients[type] || gradients.book;
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
+    return typeList[Math.abs(hash) % typeList.length];
+};
 
 const Store = () => {
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
     const { addToCart, currency, setCurrency, formatPrice } = useCart();
     const scrollContainerRef = useRef(null);
     const [scrollStatus, setScrollStatus] = useState({ left: false, right: true });
+
+    useEffect(() => {
+        AOS.init({
+            duration: 1000,
+            once: true,
+            easing: 'ease-out-cubic'
+        });
+
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/products`);
+                if (!res.ok) throw new Error('Failed to fetch products');
+                const data = await res.json();
+                setProducts(data);
+            } catch (err) {
+                console.error('Store fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     const checkScroll = () => {
         if (scrollContainerRef.current) {
@@ -86,7 +63,7 @@ const Store = () => {
         checkScroll();
         window.addEventListener('resize', checkScroll);
         return () => window.removeEventListener('resize', checkScroll);
-    }, []);
+    }, [products]);
 
     const scrollCategories = (direction) => {
         if (scrollContainerRef.current) {
@@ -95,14 +72,35 @@ const Store = () => {
         }
     };
 
-    const filteredProducts = filter === 'all'
-        ? PRODUCTS
-        : PRODUCTS.filter(p => p.type === filter);
+    const filteredProducts = useMemo(() => {
+        return products.filter(p => {
+            if (filter === 'all') return true;
+
+            const prodCat = (p.category || '').toLowerCase();
+            const filterVal = filter.toLowerCase();
+
+            if (filterVal === 'audio') {
+                return prodCat === 'audio' || prodCat === 'audiobook' || prodCat === 'audiobooks';
+            }
+            if (filterVal === 'book') {
+                return prodCat === 'book' || prodCat === 'books';
+            }
+
+            return prodCat === filterVal;
+        });
+    }, [products, filter]);
 
     const handleAddToCart = (product) => {
-        addToCart(product);
-        // Optional: Add toast notification Logic here
+        // Map backend product data to cart format if necessary
+        const cartItem = {
+            ...product,
+            type: product.category, // context uses type for badge display usually
+            image: product.image_url // context might expect image
+        };
+        addToCart(cartItem);
     };
+
+    const skeletons = Array(4).fill(null);
 
     return (
         <div className="store-page">
@@ -178,46 +176,64 @@ const Store = () => {
                                     ))}
                                 </select>
                             </div>
-
-
                         </div>
                     </div>
 
                     {/* Product Grid */}
-                    <div className="product-grid">
-                        {filteredProducts.map((product, index) => (
-                            <div className="product-card" key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
-                                <div className="product-cover" style={{ background: product.color }}>
-                                    <div className="cover-content">
-                                        <h3>{product.title}</h3>
-                                        <span>{product.author}</span>
-                                    </div>
-                                    <div className="product-type-badge">
-                                        {product.type === 'book' ? <Book size={14} /> : <Headphones size={14} />}
-                                    </div>
-                                </div>
-                                <div className="product-details">
-                                    <div className="product-meta">
-                                        <span className="price">{formatPrice(product.price)}</span>
-                                        <div className="rating">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    size={12}
-                                                    fill={i < Math.floor(product.rating) ? "#fbbf24" : "none"}
-                                                    color={i < Math.floor(product.rating) ? "#fbbf24" : "#cbd5e1"}
-                                                />
-                                            ))}
+                    <div className="product_grid_container">
+                        <div className="product-grid">
+                            {loading ? (
+                                skeletons.map((_, i) => (
+                                    <div key={i} className="product-card loading" style={{ opacity: 0.5 }}>
+                                        <div className="product-cover" style={{ height: '280px', background: '#e2e8f0' }} />
+                                        <div className="product-details">
+                                            <div style={{ height: '1.25rem', background: '#e2e8f0', borderRadius: '4px', marginBottom: '0.5rem', width: '80%' }} />
+                                            <div style={{ height: '1rem', background: '#e2e8f0', borderRadius: '4px', width: '60%' }} />
                                         </div>
                                     </div>
-                                    <h4>{product.title}</h4>
-                                    <p className="description">{product.description}</p>
-                                    <button className="btn-add-cart" onClick={() => handleAddToCart(product)}>
-                                        Add to Cart <Plus size={16} />
-                                    </button>
+                                ))
+                            ) : filteredProducts.length === 0 ? (
+                                <div className="no-results" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem 0' }}>
+                                    <Filter size={48} style={{ margin: '0 auto 1rem', display: 'block' }} />
+                                    <h3>No products found</h3>
+                                    <p>Check back later for new resources</p>
                                 </div>
-                            </div>
-                        ))}
+                            ) : (
+                                filteredProducts.map((product, index) => (
+                                    <div className="product-card" key={product.id} data-aos="fade-up" data-aos-delay={(index % 4) * 50}>
+                                        <div className="product-cover" style={{ background: typeToGradient(product.category, product.title) }}>
+                                            <div className="cover-content">
+                                                <h3>{product.title}</h3>
+                                                <span>{product.author}</span>
+                                            </div>
+                                            <div className="product-type-badge">
+                                                {product.category === 'book' ? <Book size={14} /> : <Headphones size={14} />}
+                                            </div>
+                                        </div>
+                                        <div className="product-details">
+                                            <div className="product-meta">
+                                                <span className="price">{formatPrice(product.price)}</span>
+                                                <div className="rating">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star
+                                                            key={i}
+                                                            size={12}
+                                                            fill={i < Math.floor(product.rating || 5) ? "#fbbf24" : "none"}
+                                                            color={i < Math.floor(product.rating || 5) ? "#fbbf24" : "#cbd5e1"}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <h4>{product.title}</h4>
+                                            <p className="description">{product.description}</p>
+                                            <button className="btn-add-cart" onClick={() => handleAddToCart(product)}>
+                                                Add to Cart <Plus size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </section>

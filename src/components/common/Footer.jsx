@@ -66,10 +66,6 @@ const Footer = () => {
 
             <div className="footer-bottom container">
                 <p>&copy; {new Date().getFullYear()} Christ For The World Mission Int'l. All rights reserved.</p>
-                <div className="policy-links">
-                    <Link to="/privacy">Privacy Policy</Link>
-                    <Link to="/terms">Terms of Use</Link>
-                </div>
             </div>
         </footer>
     );

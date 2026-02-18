@@ -37,6 +37,24 @@ const Testimony = {
 
     delete: async (id) => {
         await pool.query('DELETE FROM testimonies WHERE id = ?', [id]);
+    },
+
+    getCount: async () => {
+        const [rows] = await pool.query('SELECT COUNT(*) as count FROM testimonies');
+        return rows[0].count;
+    },
+
+    getCountByMonth: async (year, month) => {
+        const [rows] = await pool.query(
+            'SELECT COUNT(*) as count FROM testimonies WHERE YEAR(created_at) = ? AND MONTH(created_at) = ?',
+            [year, month]
+        );
+        return rows[0].count;
+    },
+
+    getRecent: async (limit = 5) => {
+        const [rows] = await pool.query('SELECT * FROM testimonies ORDER BY created_at DESC LIMIT ?', [limit]);
+        return rows;
     }
 };
 

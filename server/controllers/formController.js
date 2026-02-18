@@ -30,6 +30,16 @@ const formController = {
         }
     },
 
+    toggleFirstTimerStatus: async (req, res) => {
+        try {
+            const { status } = req.body;
+            await FirstTimer.toggleStatus(req.params.id, status);
+            res.status(200).json({ message: 'Status updated successfully' });
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating status', error: error.message });
+        }
+    },
+
     // Prayer Requests
     submitPrayerRequest: async (req, res) => {
         try {
@@ -55,6 +65,16 @@ const formController = {
             res.status(200).json({ message: 'Prayer request deleted successfully' });
         } catch (error) {
             res.status(500).json({ message: 'Error deleting prayer request', error: error.message });
+        }
+    },
+
+    togglePrayerRequestStatus: async (req, res) => {
+        try {
+            const { status } = req.body;
+            await PrayerRequest.toggleStatus(req.params.id, status);
+            res.status(200).json({ message: 'Status updated successfully' });
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating status', error: error.message });
         }
     }
 };

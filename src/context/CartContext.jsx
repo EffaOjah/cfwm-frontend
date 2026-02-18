@@ -21,7 +21,7 @@ export const CartProvider = ({ children }) => {
 
     const [currency, setCurrency] = useState(() => {
         const savedCurrency = localStorage.getItem('cfwm_currency');
-        return savedCurrency || 'USD';
+        return savedCurrency || 'NGN';
     });
 
     useEffect(() => {
@@ -34,7 +34,11 @@ export const CartProvider = ({ children }) => {
 
     const formatPrice = (price) => {
         const selected = CURRENCIES[currency];
-        const converted = price * selected.rate;
+        // The database stores prices in NGN (matching Admin UI)
+        // Convert to USD base first, then to selected currency
+        const baseInUsd = price / CURRENCIES.NGN.rate;
+        const converted = baseInUsd * selected.rate;
+
         return `${selected.symbol}${converted.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2

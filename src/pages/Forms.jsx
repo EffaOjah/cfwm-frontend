@@ -16,6 +16,7 @@ const Forms = () => {
         phone: '',
         email: '',
         address: '',
+        how_heard: '',
         wants_visit: false
     });
 
@@ -29,7 +30,14 @@ const Forms = () => {
         name: '',
         phone: '',
         topic: '',
-        request_details: ''
+        request_details: '',
+        is_confidential: false
+    });
+
+    const [submitting, setSubmitting] = useState({
+        firstTimer: false,
+        testimony: false,
+        prayer: false
     });
 
     // Response Modal State
@@ -46,6 +54,7 @@ const Forms = () => {
 
     const handleFirstTimerSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(prev => ({ ...prev, firstTimer: true }));
         try {
             const response = await fetch(`${API_BASE_URL}/forms/first-timer`, {
                 method: 'POST',
@@ -54,14 +63,17 @@ const Forms = () => {
             });
             if (!response.ok) throw new Error('Failed to submit details');
             showResponse('success', 'Submitted!', 'Welcome to the family! We will get in touch with you soon.');
-            setFirstTimerData({ full_name: '', phone: '', email: '', address: '', wants_visit: false });
+            setFirstTimerData({ full_name: '', phone: '', email: '', address: '', how_heard: '', wants_visit: false });
         } catch (err) {
             showResponse('error', 'Submission Failed', err.message);
+        } finally {
+            setSubmitting(prev => ({ ...prev, firstTimer: false }));
         }
     };
 
     const handleTestimonySubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(prev => ({ ...prev, testimony: true }));
         try {
             const response = await fetch(`${API_BASE_URL}/testimonies`, {
                 method: 'POST',
@@ -76,11 +88,14 @@ const Forms = () => {
             setTestimonyData({ name: '', content: '', permission: false });
         } catch (err) {
             showResponse('error', 'Submission Failed', err.message);
+        } finally {
+            setSubmitting(prev => ({ ...prev, testimony: false }));
         }
     };
 
     const handlePrayerSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(prev => ({ ...prev, prayer: true }));
         try {
             const response = await fetch(`${API_BASE_URL}/forms/prayer-request`, {
                 method: 'POST',
@@ -89,9 +104,11 @@ const Forms = () => {
             });
             if (!response.ok) throw new Error('Failed to send request');
             showResponse('success', 'Sent!', 'Your prayer request has been received. We are standing in faith with you.');
-            setPrayerData({ name: '', phone: '', topic: '', request_details: '' });
+            setPrayerData({ name: '', phone: '', topic: '', request_details: '', is_confidential: false });
         } catch (err) {
             showResponse('error', 'Submission Failed', err.message);
+        } finally {
+            setSubmitting(prev => ({ ...prev, prayer: false }));
         }
     };
 
@@ -215,6 +232,21 @@ const Forms = () => {
                                 ></textarea>
                             </div>
 
+                            <div className="form-group">
+                                <label><Info size={18} /> How did you hear about us?</label>
+                                <select
+                                    value={firstTimerData.how_heard}
+                                    onChange={(e) => setFirstTimerData({ ...firstTimerData, how_heard: e.target.value })}
+                                >
+                                    <option value="">Select an option</option>
+                                    <option value="Friend/Family">Friend or Family Member</option>
+                                    <option value="Social Media">Social Media (Facebook/Instagram)</option>
+                                    <option value="TV/Radio">TV or Radio Broadcast</option>
+                                    <option value="Passing By">Passing By</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
                             <div className="form-checkbox">
                                 <label>
                                     <input
@@ -226,8 +258,8 @@ const Forms = () => {
                                 </label>
                             </div>
 
-                            <button type="submit" className="btn-submit">
-                                Submit Details <Send size={18} />
+                            <button type="submit" className="btn-submit" disabled={submitting.firstTimer}>
+                                {submitting.firstTimer ? 'Submitting...' : 'Submit Details'} <Send size={18} />
                             </button>
                         </form>
                     </div>
@@ -283,8 +315,8 @@ const Forms = () => {
                                 </label>
                             </div>
 
-                            <button type="submit" className="btn-submit" disabled={!testimonyData.permission}>
-                                Share Testimony <Send size={18} />
+                            <button type="submit" className="btn-submit" disabled={!testimonyData.permission || submitting.testimony}>
+                                {submitting.testimony ? 'Sharing...' : 'Share Testimony'} <Send size={18} />
                             </button>
                         </form>
                     </div>
@@ -358,8 +390,19 @@ const Forms = () => {
                                 ></textarea>
                             </div>
 
-                            <button type="submit" className="btn-submit">
-                                Send Prayer Request <Send size={18} />
+                            <div className="form-checkbox">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={prayerData.is_confidential}
+                                        onChange={(e) => setPrayerData({ ...prayerData, is_confidential: e.target.checked })}
+                                    />
+                                    <span>Keep this request confidential</span>
+                                </label>
+                            </div>
+
+                            <button type="submit" className="btn-submit" disabled={submitting.prayer}>
+                                {submitting.prayer ? 'Sending...' : 'Send Prayer Request'} <Send size={18} />
                             </button>
                         </form>
                     </div>

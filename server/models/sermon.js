@@ -72,6 +72,16 @@ const Sermon = {
 
     delete: async (id) => {
         await pool.query('DELETE FROM sermons WHERE id = ?', [id]);
+    },
+
+    getCount: async () => {
+        const [rows] = await pool.query('SELECT COUNT(*) as count FROM sermons');
+        return rows[0].count;
+    },
+
+    getRecent: async (limit = 3) => {
+        const [rows] = await pool.query('SELECT * FROM sermons ORDER BY created_at DESC LIMIT ?', [limit]);
+        return rows;
     }
 };
 

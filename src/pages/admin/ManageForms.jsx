@@ -17,10 +17,12 @@ import {
     AlertCircle,
     FileType
 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AdminModal from '../../components/admin/AdminModal';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import ActionDropdown from '../../components/admin/ActionDropdown';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const ManageForms = () => {
     const dropdownTriggerRef = useRef(null);
@@ -30,31 +32,64 @@ const ManageForms = () => {
     const [itemToDelete, setItemToDelete] = useState(null); // { type, id }
     const [selectedItem, setSelectedItem] = useState(null); // For "View Details"
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Sample Data for First Timers
-    const [firstTimers, setFirstTimers] = useState([
-        { id: '1', name: 'John Doe', phone: '+234 801 000 0001', email: 'john@example.com', address: '123 Lekki Phase 1, Lagos', date: '2023-10-24 09:30', status: 'Pending', pastoralVisit: true },
-        { id: '2', name: 'Mary Smith', phone: '+234 801 000 0002', email: 'mary@example.com', address: '45 Allen Avenue, Ikeja', date: '2023-10-25 11:15', status: 'Followed Up', pastoralVisit: false },
-        { id: '3', name: 'James Wilson', phone: '+234 802 333 4444', email: 'james.w@example.com', address: 'Plot 7, Gwarinpa, Abuja', date: '2023-10-26 14:20', status: 'Pending', pastoralVisit: true },
-        { id: '4', name: 'Sarah Bakare', phone: '+234 803 555 6666', email: 'sbakare@example.com', address: '12 Opebi, Lagos', date: '2023-10-27 10:00', status: 'Pending', pastoralVisit: false },
-        { id: '5', name: 'Peter Obi', phone: '+234 805 777 8888', email: 'p.obi@example.com', address: '88 Trans-Amadi, PH', date: '2023-10-28 16:45', status: 'Followed Up', pastoralVisit: true },
-        { id: '6', name: 'Grace Adebayo', phone: '+234 809 111 2222', email: 'grace.a@example.com', address: '15 Challenge, Ibadan', date: '2023-10-29 08:30', status: 'Pending', pastoralVisit: false }
-    ]);
+    const [firstTimers, setFirstTimers] = useState([]);
+    const [prayerRequests, setPrayerRequests] = useState([]);
 
-    // Sample Data for Prayer Requests
-    const [prayerRequests, setPrayerRequests] = useState([
-        { id: '1', name: 'Jane Smith', phone: '+234 801 222 3333', topic: 'Healing', details: 'Please pray for my mother healing from persistent back pain. She has been in discomfort for 3 weeks.', date: '2023-10-24 10:00', confidential: true, status: 'Prayed Over' },
-        { id: '2', name: 'James Brown', phone: '+234 801 444 5555', topic: 'Travel', details: 'Traveling mercies for my upcoming trip to Calabar for the district conference.', date: '2023-10-25 15:30', confidential: false, status: 'Pending' },
-        { id: '3', name: 'Bose Williams', phone: '+234 802 666 7777', topic: 'Financial', details: 'I need a breakthrough in my business. Sales have been low lately.', date: '2023-10-26 09:15', confidential: false, status: 'Pending' },
-        { id: '4', name: 'Samuel Okoro', phone: '+234 803 888 9999', topic: 'Spiritual', details: 'Praying for spiritual growth and deeper intimacy with God.', date: '2023-10-27 12:45', confidential: true, status: 'Pending' },
-        { id: '5', name: 'Esther Ani', phone: '+234 805 111 0000', topic: 'Family', details: 'Restoration of peace within my family unit.', date: '2023-10-28 17:30', confidential: false, status: 'Prayed Over' },
-        { id: '6', name: 'David Mark', phone: '+234 809 222 1111', topic: 'Work', details: 'I am seeking a new job opportunity in the tech sector.', date: '2023-10-29 11:00', confidential: false, status: 'Pending' }
-    ]);
+    // Fetch data
+    useEffect(() => {
+        fetchSubmissions();
+    }, []);
+
+    const fetchSubmissions = async () => {
+        setLoading(true);
+        try {
+            const [ftRes, prRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/forms/first-timers`),
+                fetch(`${API_BASE_URL}/forms/prayer-requests`)
+            ]);
+
+            if (!ftRes.ok || !prRes.ok) throw new Error('Failed to fetch submissions');
+
+            const ftData = await ftRes.json();
+            const prData = await prRes.json();
+
+            // Map and normalize data
+            setFirstTimers(ftData.map(item => ({
+                id: item.id,
+                name: item.full_name,
+                phone: item.phone,
+                email: item.email,
+                address: item.address,
+                howHeard: item.how_heard,
+                date: new Date(item.created_at).toLocaleString(),
+                status: item.status || 'Pending',
+                pastoralVisit: item.wants_visit
+            })));
+
+            setPrayerRequests(prData.map(item => ({
+                id: item.id,
+                name: item.name,
+                phone: item.phone,
+                topic: item.topic,
+                details: item.request_details,
+                date: new Date(item.created_at).toLocaleString(),
+                confidential: item.is_confidential,
+                status: item.status || 'Pending'
+            })));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Pagination State
     const [currentPageFT, setCurrentPageFT] = useState(1);
     const [currentPagePR, setCurrentPagePR] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(10);
 
     // Calculations
     const currentList = activeTab === 'firstTimers' ? firstTimers : prayerRequests;
@@ -75,8 +110,17 @@ const ManageForms = () => {
         setActiveDropdownId(null);
     };
 
-    const confirmDelete = () => {
-        if (itemToDelete) {
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+
+        try {
+            const endpoint = itemToDelete.type === 'firstTimers' ? 'first-timers' : 'prayer-requests';
+            const response = await fetch(`${API_BASE_URL}/forms/${endpoint}/${itemToDelete.id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Failed to delete record');
+
             if (activeTab === 'firstTimers') {
                 setFirstTimers(firstTimers.filter(i => i.id !== itemToDelete.id));
             } else {
@@ -84,24 +128,38 @@ const ManageForms = () => {
             }
             setIsDeleteModalOpen(false);
             setItemToDelete(null);
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting record: ' + err.message);
         }
     };
 
-    const toggleStatus = (id) => {
-        if (activeTab === 'firstTimers') {
-            setFirstTimers(firstTimers.map(i => {
-                if (i.id === id) {
-                    return { ...i, status: i.status === 'Pending' ? 'Followed Up' : 'Pending' };
-                }
-                return i;
-            }));
-        } else {
-            setPrayerRequests(prayerRequests.map(i => {
-                if (i.id === id) {
-                    return { ...i, status: i.status === 'Pending' ? 'Prayed Over' : 'Pending' };
-                }
-                return i;
-            }));
+    const toggleStatus = async (id) => {
+        const item = currentList.find(i => i.id === id);
+        if (!item) return;
+
+        const nextStatus = item.status === 'Pending'
+            ? (activeTab === 'firstTimers' ? 'Followed Up' : 'Prayed Over')
+            : 'Pending';
+
+        try {
+            const endpoint = activeTab === 'firstTimers' ? 'first-timers' : 'prayer-requests';
+            const response = await fetch(`${API_BASE_URL}/forms/${endpoint}/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: nextStatus })
+            });
+
+            if (!response.ok) throw new Error('Failed to update status');
+
+            if (activeTab === 'firstTimers') {
+                setFirstTimers(firstTimers.map(i => i.id === id ? { ...i, status: nextStatus } : i));
+            } else {
+                setPrayerRequests(prayerRequests.map(i => i.id === id ? { ...i, status: nextStatus } : i));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error updating status: ' + err.message);
         }
         setActiveDropdownId(null);
     };
@@ -170,7 +228,22 @@ const ManageForms = () => {
                             )}
                         </thead>
                         <tbody>
-                            {paginatedList.length > 0 ? paginatedList.map((item) => (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem' }}>
+                                        <div className="admin-loading-spinner" style={{ margin: '0 auto' }}></div>
+                                        <p style={{ marginTop: '1rem', color: 'var(--admin-text-muted)' }}>Loading submissions...</p>
+                                    </td>
+                                </tr>
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: '#dc2626' }}>
+                                        <AlertCircle size={32} style={{ margin: '0 auto 1rem' }} />
+                                        <p>{error}</p>
+                                        <button onClick={fetchSubmissions} className="admin-action-btn-secondary" style={{ marginTop: '1rem' }}>Retry</button>
+                                    </td>
+                                </tr>
+                            ) : paginatedList.length > 0 ? paginatedList.map((item) => (
                                 <tr key={item.id}>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -348,19 +421,27 @@ const ManageForms = () => {
 
                         {activeTab === 'firstTimers' ? (
                             <>
-                                <div style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                                <div style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '12px', marginBottom: '1rem' }}>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.7rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', marginBottom: '0.6rem' }}>
                                         <MapPin size={12} /> Residential Address
                                     </label>
                                     <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{selectedItem.address}</p>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', borderRadius: '12px', border: '1px solid var(--admin-border)', background: selectedItem.pastoralVisit ? '#fffbeb' : '#f8fafc' }}>
-                                    {selectedItem.pastoralVisit ? <AlertCircle size={20} className="text-amber-500" /> : <CheckCircle size={20} className="text-slate-400" />}
-                                    <div>
-                                        <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>Pastoral Visit Requested?</span>
-                                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>
-                                            {selectedItem.pastoralVisit ? "The visitor explicitly requested a visit from a pastor." : "No specific visit request was made."}
-                                        </p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid var(--admin-border)' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.7rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                                            <Search size={12} /> How Heard
+                                        </label>
+                                        <p style={{ fontWeight: 600, margin: 0, fontSize: '0.85rem' }}>{selectedItem.howHeard || "Not specified"}</p>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', borderRadius: '12px', border: '1px solid var(--admin-border)', background: selectedItem.pastoralVisit ? '#fffbeb' : '#f8fafc' }}>
+                                        {selectedItem.pastoralVisit ? <AlertCircle size={20} className="text-amber-500" /> : <CheckCircle size={20} className="text-slate-400" />}
+                                        <div>
+                                            <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>Visit Requested?</span>
+                                            <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--admin-text-muted)' }}>
+                                                {selectedItem.pastoralVisit ? "Yes" : "No"}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </>

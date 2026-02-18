@@ -11,11 +11,15 @@ const FirstTimer = {
         const id = crypto.randomUUID();
         const { full_name, phone, email, address, how_heard, wants_visit } = data;
         await pool.query(
-            `INSERT INTO first_timers (id, full_name, phone, email, address, how_heard, wants_visit) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [id, full_name, phone, email, address, how_heard, wants_visit || false]
+            `INSERT INTO first_timers (id, full_name, phone, email, address, how_heard, wants_visit, status) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, full_name, phone, email, address, how_heard, wants_visit || false, 'Pending']
         );
         return id;
+    },
+
+    toggleStatus: async (id, status) => {
+        await pool.query('UPDATE first_timers SET status = ? WHERE id = ?', [status, id]);
     },
 
     delete: async (id) => {

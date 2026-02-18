@@ -32,6 +32,16 @@ const Event = {
 
     delete: async (id) => {
         await pool.query('DELETE FROM events WHERE id = ?', [id]);
+    },
+
+    getCount: async () => {
+        const [rows] = await pool.query('SELECT COUNT(*) as count FROM events');
+        return rows[0].count;
+    },
+
+    getRecent: async (limit = 3) => {
+        const [rows] = await pool.query('SELECT * FROM events ORDER BY created_at DESC LIMIT ?', [limit]);
+        return rows;
     }
 };
 

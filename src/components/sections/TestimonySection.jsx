@@ -1,31 +1,43 @@
+import { useState, useEffect } from 'react';
 import { Quote, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './TestimonySection.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+// Generate a consistent colour from a name string
+const nameToColor = (name = '') => {
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#ec4899'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+};
+
+const getInitials = (name = '') =>
+    name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
+
 const TestimonySection = () => {
-    const testimonies = [
-        {
-            id: 1,
-            name: "Sarah Johnson",
-            role: "Member",
-            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=3387&auto=format&fit=crop",
-            text: "God turned my situation around completely! After the 21 days fasting, I received a job offer I didn't even apply for. His power is real!"
-        },
-        {
-            id: 2,
-            name: "Michael Chen",
-            role: "Worker",
-            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3387&auto=format&fit=crop",
-            text: "I was healed of a chronic condition during the breakthrough service. The presence of God in this house is undeniable."
-        },
-        {
-            id: 3,
-            name: "Amara Okeke",
-            role: "Choir Member",
-            image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=3387&auto=format&fit=crop",
-            text: "My family was on the verge of breaking up, but through the counsel of Papa and the prayers of the church, we are restored and stronger than ever."
-        }
-    ];
+    const [testimonies, setTestimonies] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTestimonies = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/testimonies`);
+                if (!res.ok) throw new Error('Failed to fetch testimonies');
+                const data = await res.json();
+                // Show only the 3 most recent approved testimonies
+                setTestimonies(data.slice(0, 3));
+            } catch (err) {
+                console.error('TestimonySection fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTestimonies();
+    }, []);
+
+    const skeletons = Array(3).fill(null);
 
     return (
         <section className="section-testimony">
@@ -40,21 +52,57 @@ const TestimonySection = () => {
                 </div>
 
                 <div className="testimony-grid">
-                    {testimonies.map((testimony, idx) => (
-                        <div key={testimony.id} className="testimony-card" data-aos="fade-up" data-aos-delay={idx * 100}>
-                            <div className="quote-icon-wrapper">
-                                <Quote size={24} className="quote-icon" />
-                            </div>
-                            <p className="testimony-text">"{testimony.text}"</p>
-                            <div className="testimony-author">
-                                <img src={testimony.image} alt={testimony.name} className="author-img" />
-                                <div className="author-info">
-                                    <h4 className="author-name">{testimony.name}</h4>
-                                    <span className="author-role">{testimony.role}</span>
+                    {loading ? (
+                        skeletons.map((_, i) => (
+                            <div key={i} className="testimony-card" style={{ opacity: 0.5 }} data-aos="fade-up" data-aos-delay={i * 100}>
+                                <div className="quote-icon-wrapper">
+                                    <Quote size={24} className="quote-icon" />
                                 </div>
+                                <div style={{ height: '4rem', background: '#e2e8f0', borderRadius: '8px', marginBottom: '1rem' }} />
+                                <div style={{ height: '1rem', background: '#e2e8f0', borderRadius: '4px', width: '40%' }} />
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : testimonies.length === 0 ? (
+                        <p style={{ textAlign: 'center', color: '#64748b', gridColumn: '1/-1', padding: '2rem 0' }}>
+                            No testimonies yet. Be the first to share!
+                        </p>
+                    ) : (
+                        testimonies.map((testimony, idx) => {
+                            const color = nameToColor(testimony.name);
+                            const initials = getInitials(testimony.name);
+                            return (
+                                <div key={testimony.id} className="testimony-card" data-aos="fade-up" data-aos-delay={idx * 100}>
+                                    <div className="quote-icon-wrapper">
+                                        <Quote size={24} className="quote-icon" />
+                                    </div>
+                                    <p className="testimony-text">"{testimony.content}"</p>
+                                    <div className="testimony-author">
+                                        <div
+                                            style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '50%',
+                                                background: `${color}20`,
+                                                color,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontWeight: 700,
+                                                fontSize: '0.85rem',
+                                                flexShrink: 0,
+                                                border: `2px solid ${color}40`
+                                            }}
+                                        >
+                                            {initials}
+                                        </div>
+                                        <div className="author-info">
+                                            <h4 className="author-name">— {testimony.name}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
 
                 <div className="testimony-footer text-center">

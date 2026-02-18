@@ -67,6 +67,8 @@
     border-radius: 1rem;
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .testimony-card:hover {
@@ -90,6 +92,14 @@
     /* Slate-700 */
     margin-bottom: 2rem;
     font-style: italic;
+    flex: 1;
+    /* Push author to bottom */
+    overflow-wrap: break-word;
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
 }
 
 .testimony-author {
@@ -98,30 +108,18 @@
     gap: 1rem;
 }
 
-.author-img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--color-brand-red);
-    /* Brand Red */
-}
-
 .author-info {
     display: flex;
     flex-direction: column;
 }
 
 .author-name {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    color: #0f172a;
-    /* Dark Text */
-}
-
-.author-role {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
+    color: var(--color-brand-red);
+    font-family: var(--font-heading);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .testimony-footer {
@@ -203,4 +201,61 @@
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(234, 28, 36, 0.4);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .testimony-title {
+        font-size: 2.5rem;
+    }
+
+    .section-testimony {
+        padding: 4rem 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .testimony-title {
+        font-size: 2rem;
+    }
+
+    .testimony-desc {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+
+    .testimony-card {
+        padding: 1.5rem;
+    }
+
+    .testimony-text {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .testimony-footer {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0 1rem;
+    }
+
+    .btn-red-pill,
+    .btn-outline-red {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .testimony-title {
+        font-size: 1.75rem;
+    }
+
+    .testimony-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .testimony-grid {
+        gap: 1.5rem;
+    }
 }
