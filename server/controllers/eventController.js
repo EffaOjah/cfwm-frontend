@@ -24,7 +24,11 @@ const eventController = {
 
     createEvent: async (req, res) => {
         try {
-            const id = await Event.create(req.body);
+            const eventData = req.body;
+            if (req.file) {
+                eventData.image_url = req.file.path;
+            }
+            const id = await Event.create(eventData);
             res.status(201).json({ message: 'Event created successfully', id });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
@@ -36,7 +40,11 @@ const eventController = {
 
     updateEvent: async (req, res) => {
         try {
-            await Event.update(req.params.id, req.body);
+            const eventData = req.body;
+            if (req.file) {
+                eventData.image_url = req.file.path;
+            }
+            await Event.update(req.params.id, eventData);
             res.status(200).json({ message: 'Event updated successfully' });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {

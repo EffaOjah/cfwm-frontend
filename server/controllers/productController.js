@@ -25,7 +25,11 @@ const productController = {
 
     createProduct: async (req, res) => {
         try {
-            const id = await Product.create(req.body);
+            const productData = req.body;
+            if (req.file) {
+                productData.image_url = req.file.path;
+            }
+            const id = await Product.create(productData);
             res.status(201).json({ message: 'Product created successfully', id });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
@@ -37,7 +41,11 @@ const productController = {
 
     updateProduct: async (req, res) => {
         try {
-            await Product.update(req.params.id, req.body);
+            const productData = req.body;
+            if (req.file) {
+                productData.image_url = req.file.path;
+            }
+            await Product.update(req.params.id, productData);
             res.status(200).json({ message: 'Product updated successfully' });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {

@@ -12,7 +12,8 @@ import {
     Eye,
     BookOpen,
     Link as LinkIcon,
-    AlertCircle
+    AlertCircle,
+    Plus
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import ConfirmModal from '../../components/admin/ConfirmModal';
@@ -32,6 +33,8 @@ const ManageSermons = () => {
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [viewingSermon, setViewingSermon] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
 
     // Response Modal State
     const [responseModal, setResponseModal] = useState({
@@ -150,6 +153,8 @@ const ManageSermons = () => {
                 formattedData.sermon_date = new Date(formattedData.sermon_date).toISOString().split('T')[0];
             }
             setFormData(formattedData);
+            setPreviewUrl(initialData.thumbnail_url || '');
+            setSelectedFile(null);
         } else {
             setFormData({
                 title: '',
@@ -163,6 +168,8 @@ const ManageSermons = () => {
                 audio_url: '',
                 thumbnail_url: ''
             });
+            setPreviewUrl('');
+            setSelectedFile(null);
         }
         setIsModalOpen(true);
         setActiveDropdownId(null);
@@ -173,8 +180,17 @@ const ManageSermons = () => {
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, files } = e.target;
+        if (type === 'file') {
+            const file = files[0];
+            setSelectedFile(file);
+            if (file) {
+                const url = URL.createObjectURL(file);
+                setPreviewUrl(url);
+            }
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSaveSermon = async (e) => {
@@ -186,10 +202,22 @@ const ManageSermons = () => {
 
             const method = modalMode === 'create' ? 'POST' : 'PUT';
 
+            const formDataPayload = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (key !== 'thumbnail_url') {
+                    formDataPayload.append(key, formData[key]);
+                }
+            });
+
+            if (selectedFile) {
+                formDataPayload.append('thumbnail_url', selectedFile);
+            } else if (formData.thumbnail_url) {
+                formDataPayload.append('thumbnail_url', formData.thumbnail_url);
+            }
+
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: formDataPayload
             });
 
             if (!response.ok) {
@@ -199,6 +227,8 @@ const ManageSermons = () => {
 
             await fetchSermons();
             handleCloseModal();
+            setSelectedFile(null);
+            setPreviewUrl('');
             showResponse(
                 'success',
                 modalMode === 'create' ? 'Sermon Uploaded' : 'Sermon Updated',
@@ -293,7 +323,11 @@ const ManageSermons = () => {
                                                     alignItems: 'center',
                                                     justifyContent: 'center'
                                                 }}>
-                                                    {sermon.type === 'video' ? <Video size={20} /> : <Music size={20} />}
+                                                    {sermon.thumbnail_url ? (
+                                                        <img src={sermon.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        sermon.type === 'video' ? <Video size={20} /> : <Music size={20} />
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <div style={{ fontWeight: 700 }}>{sermon.title}</div>
@@ -593,6 +627,72 @@ const ManageSermons = () => {
                             <option value="video">Video</option>
                             <option value="audio">Audio</option>
                         </select>
+                    </div>
+
+                    <div className="admin-form-group span-2">
+                        <label className="admin-label">Sermon Thumbnail</label>
+                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                            <div style={{
+                                width: '120px',
+                                height: '120px',
+                                borderRadius: '16px',
+                                border: '2px dashed var(--admin-border)',
+                                background: '#f8fafc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                flexShrink: 0
+                            }}>
+                                {previewUrl ? (
+                                    <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                                        <Music size={32} style={{ marginBottom: '0.5rem', opacity: 0.3 }} />
+                                        <div style={{ fontSize: '0.7rem' }}>No Image</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ flex: 1 }}>
+                                <div style={{
+                                    position: 'relative',
+                                    padding: '1.5rem',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--admin-border)',
+                                    background: 'white',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    cursor: 'pointer'
+                                }}>
+                                    <input
+                                        type="file"
+                                        name="thumbnail_url"
+                                        accept="image/*"
+                                        onChange={handleInputChange}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            opacity: 0,
+                                            cursor: 'pointer'
+                                        }}
+                                    />
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--admin-primary-10)', color: 'var(--admin-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Plus size={20} />
+                                    </div>
+                                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{selectedFile ? selectedFile.name : 'Choose Thumbnail'}</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG or WebP (Max 5MB)</span>
+                                </div>
+                                {formData.thumbnail_url && !selectedFile && (
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--admin-primary)', marginTop: '0.5rem', fontWeight: 600 }}>Using current thumbnail from Cloudinary</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="admin-form-group">

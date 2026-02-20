@@ -25,7 +25,11 @@ const sermonController = {
 
     createSermon: async (req, res) => {
         try {
-            const id = await Sermon.create(req.body);
+            const sermonData = req.body;
+            if (req.file) {
+                sermonData.thumbnail_url = req.file.path;
+            }
+            const id = await Sermon.create(sermonData);
             res.status(201).json({ message: 'Sermon created successfully', id });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
@@ -37,7 +41,11 @@ const sermonController = {
 
     updateSermon: async (req, res) => {
         try {
-            await Sermon.update(req.params.id, req.body);
+            const sermonData = req.body;
+            if (req.file) {
+                sermonData.thumbnail_url = req.file.path;
+            }
+            await Sermon.update(req.params.id, sermonData);
             res.status(200).json({ message: 'Sermon updated successfully' });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {

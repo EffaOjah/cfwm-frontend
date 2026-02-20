@@ -8,7 +8,8 @@ import {
     Trash2,
     Calendar,
     MapPin,
-    Clock
+    Clock,
+    Plus
 } from 'lucide-react';
 import AdminModal from '../../components/admin/AdminModal';
 import ConfirmModal from '../../components/admin/ConfirmModal';
@@ -28,6 +29,8 @@ const ManageEvents = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
 
     // Response Modal State
     const [responseModal, setResponseModal] = useState({
@@ -108,30 +111,53 @@ const ManageEvents = () => {
                 description: event.description || '',
                 highlights: event.highlights || ''
             });
+            setPreviewUrl(event.image_url || '');
+            setSelectedFile(null);
         } else {
             setEditingEventId(null);
             setFormData(initialFormState);
+            setPreviewUrl('');
+            setSelectedFile(null);
         }
         setIsModalOpen(true);
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, files } = e.target;
+        if (type === 'file') {
+            const file = files[0];
+            setSelectedFile(file);
+            if (file) {
+                const url = URL.createObjectURL(file);
+                setPreviewUrl(url);
+            }
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
 
         // Map frontend fields back to backend naming convention
-        const payload = {
-            ...formData,
-            event_date: formData.date,
-            event_time: formData.time
-        };
-        // Remove UI-specific mapping fields before sending
-        delete payload.date;
-        delete payload.time;
+        const formDataPayload = new FormData();
+
+        // Add text fields
+        Object.keys(formData).forEach(key => {
+            if (key !== 'date' && key !== 'time' && key !== 'image_url') {
+                formDataPayload.append(key, formData[key]);
+            }
+        });
+
+        formDataPayload.append('event_date', formData.date);
+        formDataPayload.append('event_time', formData.time);
+
+        // Add file if selected, otherwise add the existing image_url
+        if (selectedFile) {
+            formDataPayload.append('image_url', selectedFile);
+        } else if (formData.image_url) {
+            formDataPayload.append('image_url', formData.image_url);
+        }
 
         try {
             const url = editingEventId
@@ -141,8 +167,8 @@ const ManageEvents = () => {
 
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                // Do not set Content-Type header for FormData, browser will do it with boundary
+                body: formDataPayload
             });
 
             if (!response.ok) {
@@ -153,11 +179,13 @@ const ManageEvents = () => {
             await fetchEvents(); // Refresh list
             setIsModalOpen(false);
             setFormData(initialFormState);
+            setSelectedFile(null);
+            setPreviewUrl('');
             setEditingEventId(null);
             showResponse(
                 'success',
                 editingEventId ? 'Event Updated' : 'Event Created',
-                `The event "${payload.title}" has been successfully ${editingEventId ? 'updated' : 'saved'}.`
+                `The event "${formData.title}" has been successfully ${editingEventId ? 'updated' : 'saved'}.`
             );
         } catch (err) {
             showResponse('error', 'Action Failed', err.message);
@@ -503,26 +531,69 @@ const ManageEvents = () => {
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Event Image URL</label>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <input
-                                type="text"
-                                name="image_url"
-                                placeholder="https://example.com/image.jpg"
-                                className="admin-input"
-                                style={{ flex: 1 }}
-                                value={formData.image_url}
-                                onChange={handleInputChange}
-                            />
-                            <div style={{ width: '46px', height: '46px', borderRadius: '12px', border: '1px solid var(--admin-border)', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                {formData.image_url ? (
-                                    <img src={formData.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Event Image</label>
+                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                            <div style={{
+                                width: '120px',
+                                height: '120px',
+                                borderRadius: '16px',
+                                border: '2px dashed var(--admin-border)',
+                                background: '#f8fafc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                flexShrink: 0
+                            }}>
+                                {previewUrl ? (
+                                    <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
-                                    <Calendar size={20} className="text-slate-400" />
+                                    <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                                        <Calendar size={32} style={{ marginBottom: '0.5rem', opacity: 0.3 }} />
+                                        <div style={{ fontSize: '0.7rem' }}>No Image</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ flex: 1 }}>
+                                <div style={{
+                                    position: 'relative',
+                                    padding: '1.5rem',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--admin-border)',
+                                    background: 'white',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    cursor: 'pointer'
+                                }}>
+                                    <input
+                                        type="file"
+                                        name="image_url"
+                                        accept="image/*"
+                                        onChange={handleInputChange}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            opacity: 0,
+                                            cursor: 'pointer'
+                                        }}
+                                    />
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--admin-primary-10)', color: 'var(--admin-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Plus size={20} />
+                                    </div>
+                                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{selectedFile ? selectedFile.name : 'Choose Event Image'}</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG or WebP (Max 5MB)</span>
+                                </div>
+                                {formData.image_url && !selectedFile && (
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--admin-primary)', marginTop: '0.5rem', fontWeight: 600 }}>Using current image from Cloudinary</p>
                                 )}
                             </div>
                         </div>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: '0.4rem' }}>Enter a direct link to the event banner or poster image.</p>
                     </div>
 
                     <div className="admin-form-grid">

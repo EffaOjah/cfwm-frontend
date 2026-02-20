@@ -7,6 +7,16 @@ const FirstTimer = {
         return rows;
     },
 
+    getCount: async () => {
+        const [[{ count }]] = await pool.query('SELECT COUNT(*) as count FROM first_timers');
+        return count;
+    },
+
+    getRecent: async (limit) => {
+        const [rows] = await pool.query('SELECT * FROM first_timers ORDER BY created_at DESC LIMIT ?', [limit]);
+        return rows;
+    },
+
     create: async (data) => {
         const id = crypto.randomUUID();
         const { full_name, phone, email, address, how_heard, wants_visit } = data;

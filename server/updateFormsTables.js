@@ -9,8 +9,20 @@ const updateFormsTables = async () => {
 
         // Update first_timers table
         const ftColumns = [
-            { name: 'status', definition: 'VARCHAR(50) DEFAULT "Pending"' }
+            { name: 'status', definition: 'VARCHAR(50) DEFAULT "Pending"' },
+            { name: 'email', definition: 'VARCHAR(255) DEFAULT NULL' }
         ];
+
+        // Check for the "email?" typo and rename it to "email" if it exists
+        const [emailTypoCheck] = await pool.query(
+            'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = "first_timers" AND COLUMN_NAME = ?',
+            [dbName, 'email?']
+        );
+
+        if (emailTypoCheck.length > 0) {
+            await pool.query('ALTER TABLE first_timers CHANGE COLUMN `email?` `email` VARCHAR(255) DEFAULT NULL');
+            console.log('✅ Fixed column name in first_timers: email? -> email');
+        }
 
         for (const col of ftColumns) {
             const [check] = await pool.query(
@@ -29,7 +41,8 @@ const updateFormsTables = async () => {
 
         // Update prayer_requests table
         const prColumns = [
-            { name: 'status', definition: 'VARCHAR(50) DEFAULT "Pending"' }
+            { name: 'status', definition: 'VARCHAR(50) DEFAULT "Pending"' },
+            { name: 'topic', definition: 'VARCHAR(100) DEFAULT NULL' }
         ];
 
         for (const col of prColumns) {

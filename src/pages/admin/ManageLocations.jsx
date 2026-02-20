@@ -29,6 +29,8 @@ const ManageLocations = () => {
     const [branches, setBranches] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
 
     const [selectedDistrictId, setSelectedDistrictId] = useState(null);
     const [activeDropdownId, setActiveDropdownId] = useState(null);
@@ -161,6 +163,8 @@ const ManageLocations = () => {
                 image_url: branch.image_url || '',
                 is_headquarters: !!branch.is_headquarters
             });
+            setPreviewUrl(branch.image_url || '');
+            setSelectedFile(null);
         } else {
             setBranchForm({
                 id: '',
@@ -173,6 +177,8 @@ const ManageLocations = () => {
                 image_url: '',
                 is_headquarters: false
             });
+            setPreviewUrl('');
+            setSelectedFile(null);
         }
         setIsBranchModalOpen(true);
         setActiveDropdownId(null);
@@ -186,16 +192,30 @@ const ManageLocations = () => {
                 : `${API_BASE_URL}/locations/branches/${branchForm.id}`;
             const method = branchModalMode === 'create' ? 'POST' : 'PUT';
 
+            const formDataPayload = new FormData();
+            Object.keys(branchForm).forEach(key => {
+                if (key !== 'image_url' && branchForm[key] !== undefined) {
+                    formDataPayload.append(key, branchForm[key]);
+                }
+            });
+
+            if (selectedFile) {
+                formDataPayload.append('image_url', selectedFile);
+            } else if (branchForm.image_url) {
+                formDataPayload.append('image_url', branchForm.image_url);
+            }
+
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(branchForm)
+                body: formDataPayload
             });
 
             if (!response.ok) throw new Error('Failed to save branch');
 
             await fetchData();
             setIsBranchModalOpen(false);
+            setSelectedFile(null);
+            setPreviewUrl('');
             showResponse('success', `Branch ${branchModalMode === 'create' ? 'Created' : 'Updated'}`, `The branch has been ${branchModalMode === 'create' ? 'added to' : 'updated in'} the system.`);
         } catch (err) {
             showResponse('error', 'Action Failed', err.message);
@@ -552,14 +572,77 @@ const ManageLocations = () => {
                             onChange={(e) => setBranchForm({ ...branchForm, map_url: e.target.value })}
                         />
                     </div>
-                    <div className="admin-form-group">
-                        <label className="admin-label">Image URL</label>
-                        <input
-                            type="url"
-                            className="admin-input"
-                            value={branchForm.image_url}
-                            onChange={(e) => setBranchForm({ ...branchForm, image_url: e.target.value })}
-                        />
+                    <div className="admin-form-group span-2">
+                        <label className="admin-label">Branch Image</label>
+                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                            <div style={{
+                                width: '120px',
+                                height: '120px',
+                                borderRadius: '16px',
+                                border: '2px dashed var(--admin-border)',
+                                background: '#f8fafc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                flexShrink: 0
+                            }}>
+                                {previewUrl ? (
+                                    <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                                        <Home size={32} style={{ marginBottom: '0.5rem', opacity: 0.3 }} />
+                                        <div style={{ fontSize: '0.7rem' }}>No Image</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ flex: 1 }}>
+                                <div style={{
+                                    position: 'relative',
+                                    padding: '1.5rem',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--admin-border)',
+                                    background: 'white',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    cursor: 'pointer'
+                                }}>
+                                    <input
+                                        type="file"
+                                        name="image_url"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            setSelectedFile(file);
+                                            if (file) {
+                                                const url = URL.createObjectURL(file);
+                                                setPreviewUrl(url);
+                                            }
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            opacity: 0,
+                                            cursor: 'pointer'
+                                        }}
+                                    />
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--admin-primary-10)', color: 'var(--admin-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Plus size={20} />
+                                    </div>
+                                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{selectedFile ? selectedFile.name : 'Choose Branch Image'}</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG or WebP (Max 5MB)</span>
+                                </div>
+                                {branchForm.image_url && !selectedFile && (
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--admin-primary)', marginTop: '0.5rem', fontWeight: 600 }}>Using current image from Cloudinary</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                     <div className="admin-form-group" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingTop: '1.5rem' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>

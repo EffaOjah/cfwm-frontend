@@ -40,6 +40,8 @@ const ManageStore = () => {
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [viewingProduct, setViewingProduct] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
 
     // Response Modal State
     const [responseModal, setResponseModal] = useState({
@@ -155,6 +157,8 @@ const ManageStore = () => {
         setModalMode(mode);
         if (mode === 'edit' && initialData) {
             setFormData(initialData);
+            setPreviewUrl(initialData.image_url || '');
+            setSelectedFile(null);
         } else {
             setFormData({
                 title: '',
@@ -169,6 +173,8 @@ const ManageStore = () => {
                 is_digital: false,
                 rating: 5.0
             });
+            setPreviewUrl('');
+            setSelectedFile(null);
         }
         setIsModalOpen(true);
         setActiveDropdownId(null);
@@ -179,11 +185,20 @@ const ManageStore = () => {
     };
 
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        const { name, value, type, checked, files } = e.target;
+        if (type === 'file') {
+            const file = files[0];
+            setSelectedFile(file);
+            if (file) {
+                const url = URL.createObjectURL(file);
+                setPreviewUrl(url);
+            }
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
 
     const handleSaveProduct = async (e) => {
@@ -195,10 +210,22 @@ const ManageStore = () => {
 
             const method = modalMode === 'create' ? 'POST' : 'PUT';
 
+            const formDataPayload = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (key !== 'image_url') {
+                    formDataPayload.append(key, formData[key]);
+                }
+            });
+
+            if (selectedFile) {
+                formDataPayload.append('image_url', selectedFile);
+            } else if (formData.image_url) {
+                formDataPayload.append('image_url', formData.image_url);
+            }
+
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: formDataPayload
             });
 
             if (!response.ok) {
@@ -208,6 +235,8 @@ const ManageStore = () => {
 
             await fetchProducts();
             handleCloseModal();
+            setSelectedFile(null);
+            setPreviewUrl('');
             showResponse(
                 'success',
                 modalMode === 'create' ? 'Product Added' : 'Product Updated',
@@ -634,16 +663,70 @@ const ManageStore = () => {
                         />
                     </div>
 
-                    <div className="admin-form-group">
-                        <label className="admin-label">Image URL</label>
-                        <input
-                            type="url"
-                            name="image_url"
-                            value={formData.image_url}
-                            onChange={handleInputChange}
-                            placeholder="https://..."
-                            className="admin-input"
-                        />
+                    <div className="admin-form-group span-2">
+                        <label className="admin-label">Product Image</label>
+                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                            <div style={{
+                                width: '120px',
+                                height: '120px',
+                                borderRadius: '16px',
+                                border: '2px dashed var(--admin-border)',
+                                background: '#f8fafc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                flexShrink: 0
+                            }}>
+                                {previewUrl ? (
+                                    <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                                        <ShoppingBag size={32} style={{ marginBottom: '0.5rem', opacity: 0.3 }} />
+                                        <div style={{ fontSize: '0.7rem' }}>No Image</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ flex: 1 }}>
+                                <div style={{
+                                    position: 'relative',
+                                    padding: '1.5rem',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--admin-border)',
+                                    background: 'white',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    cursor: 'pointer'
+                                }}>
+                                    <input
+                                        type="file"
+                                        name="image_url"
+                                        accept="image/*"
+                                        onChange={handleInputChange}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            opacity: 0,
+                                            cursor: 'pointer'
+                                        }}
+                                    />
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--admin-primary-10)', color: 'var(--admin-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Plus size={20} />
+                                    </div>
+                                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{selectedFile ? selectedFile.name : 'Choose Product Image'}</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>JPG, PNG or WebP (Max 5MB)</span>
+                                </div>
+                                {formData.image_url && !selectedFile && (
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--admin-primary)', marginTop: '0.5rem', fontWeight: 600 }}>Using current image from Cloudinary</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="admin-form-group">

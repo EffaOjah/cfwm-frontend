@@ -82,7 +82,11 @@ const locationController = {
 
     createBranch: async (req, res) => {
         try {
-            const id = await Branch.create(req.body);
+            const branchData = req.body;
+            if (req.file) {
+                branchData.image_url = req.file.path;
+            }
+            const id = await Branch.create(branchData);
             res.status(201).json({ message: 'Branch created successfully', id });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
@@ -94,7 +98,11 @@ const locationController = {
 
     updateBranch: async (req, res) => {
         try {
-            await Branch.update(req.params.id, req.body);
+            const branchData = req.body;
+            if (req.file) {
+                branchData.image_url = req.file.path;
+            }
+            await Branch.update(req.params.id, branchData);
             res.status(200).json({ message: 'Branch updated successfully' });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {

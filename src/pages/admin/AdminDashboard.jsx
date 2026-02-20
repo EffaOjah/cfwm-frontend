@@ -10,7 +10,9 @@ import {
     ExternalLink,
     Calendar,
     Music,
-    Eye
+    Eye,
+    Heart,
+    User
 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
@@ -141,6 +143,8 @@ const AdminDashboard = () => {
                                                 testimony: { icon: <MessageSquare size={14} />, color: '#3b82f6' },
                                                 event: { icon: <Calendar size={14} />, color: '#f59e0b' },
                                                 sermon: { icon: <Music size={14} />, color: '#10b981' },
+                                                prayer: { icon: <Heart size={14} />, color: '#ef4444' },
+                                                firstTimer: { icon: <User size={14} />, color: '#8b5cf6' },
                                             };
                                             const { icon, color } = typeConfig[activity.type] || { icon: <Clock size={14} />, color: '#8b5cf6' };
 

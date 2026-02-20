@@ -7,6 +7,16 @@ const PrayerRequest = {
         return rows;
     },
 
+    getCount: async () => {
+        const [[{ count }]] = await pool.query('SELECT COUNT(*) as count FROM prayer_requests');
+        return count;
+    },
+
+    getRecent: async (limit) => {
+        const [rows] = await pool.query('SELECT * FROM prayer_requests ORDER BY created_at DESC LIMIT ?', [limit]);
+        return rows;
+    },
+
     create: async (data) => {
         const id = crypto.randomUUID();
         const { name, phone, topic, request_details, is_confidential } = data;
