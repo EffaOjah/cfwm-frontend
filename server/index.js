@@ -26,6 +26,7 @@ const sermonRoutes = require('./routes/sermonRoutes.js');
 const locationRoutes = require('./routes/locationRoutes.js');
 const formRoutes = require('./routes/formRoutes.js');
 const statsRoutes = require('./routes/statsRoutes.js');
+const newsletterRoutes = require('./routes/newsletterRoutes.js');
 
 // Database
 const { testConnection } = require('./config/database.js');
@@ -38,6 +39,7 @@ app.use('/api/sermons', sermonRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 
 

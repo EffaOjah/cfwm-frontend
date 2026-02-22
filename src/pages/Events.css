@@ -450,6 +450,40 @@
     border-color: var(--color-brand-red);
 }
 
+.events-newsletter-feedback {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: fadeIn 0.3s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.events-newsletter-feedback.success {
+    color: #10b981;
+}
+
+.events-newsletter-feedback.error {
+    color: #ef4444;
+}
+
+.btn-red.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 992px) {
     .newsletter-card {
         flex-direction: column;

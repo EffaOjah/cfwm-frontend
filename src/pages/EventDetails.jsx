@@ -22,16 +22,18 @@ const formatTime = (timeStr) => {
     return `${hour}:${m.toString().padStart(2, '0')} ${period}`;
 };
 
-// Parse highlights — stored as JSON string or plain string in DB
+// Parse highlights — split by * or newline, trim whitespace
 const parseHighlights = (raw) => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
     try {
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [raw];
+        if (Array.isArray(parsed)) return parsed;
     } catch {
-        return [raw];
+        // Not JSON, continue to string parsing
     }
+    // Split by * or newline, trim and filter empties
+    return raw.split(/[*\n]/).map(s => s.trim()).filter(Boolean);
 };
 
 const EventDetails = () => {
@@ -187,14 +189,72 @@ const EventDetails = () => {
                     <div className="cta-content">
                         <h2>Can't Attend In Person?</h2>
                         <p>Subscribe to get updates on livestreaming and video highlights from this event.</p>
-                        <form className="cta-form" onSubmit={(e) => e.preventDefault()}>
-                            <input type="email" placeholder="Your email address" />
-                            <button type="submit" className="btn btn-red">Keep Me Updated</button>
-                        </form>
+                        <EventDetailsNewsletterForm />
                     </div>
                 </div>
             </section>
         </div>
+    );
+};
+
+const EventDetailsNewsletterForm = () => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle');
+    const [message, setMessage] = useState('');
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setStatus('loading');
+        try {
+            const response = await fetch(`${API_BASE_URL}/newsletter/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setStatus('success');
+                setMessage(data.message);
+                setEmail('');
+                setTimeout(() => setStatus('idle'), 5000);
+            } else {
+                setStatus('error');
+                setMessage(data.message || 'Error occurred.');
+                setTimeout(() => setStatus('idle'), 5000);
+            }
+        } catch (error) {
+            setStatus('error');
+            setMessage('Network error.');
+            setTimeout(() => setStatus('idle'), 5000);
+        }
+    };
+
+    return (
+        <>
+            <form className="cta-form" onSubmit={handleSubscribe}>
+                <input
+                    type="email"
+                    placeholder="Your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={status === 'loading'}
+                />
+                <button
+                    type="submit"
+                    className={`btn btn-red ${status === 'loading' ? 'loading' : ''}`}
+                    disabled={status === 'loading'}
+                >
+                    {status === 'loading' ? 'Sending...' : 'Keep Me Updated'}
+                </button>
+            </form>
+            {status === 'success' && <div className="event-cta-feedback success">{message}</div>}
+            {status === 'error' && <div className="event-cta-feedback error">{message}</div>}
+        </>
     );
 };
 

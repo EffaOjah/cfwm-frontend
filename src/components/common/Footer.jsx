@@ -1,9 +1,47 @@
-import { Facebook, Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import { useState } from 'react';
+import { Facebook, Instagram, Youtube, Mail, MapPin, Phone, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoImg from '../../assets/logo-main.png';
 import './Footer.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const Footer = () => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [message, setMessage] = useState('');
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setStatus('loading');
+        try {
+            const response = await fetch(`${API_BASE_URL}/newsletter/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setStatus('success');
+                setMessage(data.message);
+                setEmail('');
+                setTimeout(() => setStatus('idle'), 5000);
+            } else {
+                setStatus('error');
+                setMessage(data.message || 'Something went wrong.');
+                setTimeout(() => setStatus('idle'), 5000);
+            }
+        } catch (error) {
+            setStatus('error');
+            setMessage('Network error. Please try again.');
+            setTimeout(() => setStatus('idle'), 5000);
+        }
+    };
+
     return (
         <footer className="site-footer">
             <div className="container footer-grid">
@@ -57,9 +95,34 @@ const Footer = () => {
                 <div className="footer-col">
                     <h4>Stay Connected</h4>
                     <p className="newsletter-text">Subscribe to our weekly newsletter for updates and inspiration.</p>
-                    <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                        <input type="email" placeholder="Your email address" />
-                        <button type="submit" className="btn btn-primary btn-sm">Join</button>
+                    <form className="newsletter-form" onSubmit={handleSubscribe}>
+                        <input
+                            type="email"
+                            placeholder="Your email address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            disabled={status === 'loading'}
+                        />
+                        <button
+                            type="submit"
+                            className={`btn btn-primary btn-sm ${status === 'loading' ? 'loading' : ''}`}
+                            disabled={status === 'loading'}
+                        >
+                            {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : 'Join'}
+                        </button>
+                        {status === 'success' && (
+                            <div className="newsletter-feedback success">
+                                <CheckCircle2 size={14} />
+                                <span>{message}</span>
+                            </div>
+                        )}
+                        {status === 'error' && (
+                            <div className="newsletter-feedback error">
+                                <AlertCircle size={14} />
+                                <span>{message}</span>
+                            </div>
+                        )}
                     </form>
                 </div>
             </div>

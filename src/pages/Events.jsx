@@ -226,14 +226,70 @@ const Events = () => {
                             <h2>Never Miss a Blessing</h2>
                             <p>Subscribe to get monthly event calendars and special announcements delivered to your inbox.</p>
                         </div>
-                        <div className="newsletter-form">
-                            <input type="email" placeholder="Your email address" />
-                            <button className="btn btn-red">Subscribe Now</button>
-                        </div>
+                        <EventsNewsletterForm />
                     </div>
                 </div>
             </section>
         </div>
+    );
+};
+
+const EventsNewsletterForm = () => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle');
+    const [message, setMessage] = useState('');
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setStatus('loading');
+        try {
+            const response = await fetch(`${API_BASE_URL}/newsletter/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setStatus('success');
+                setMessage(data.message);
+                setEmail('');
+                setTimeout(() => setStatus('idle'), 5000);
+            } else {
+                setStatus('error');
+                setMessage(data.message || 'Error occurred.');
+                setTimeout(() => setStatus('idle'), 5000);
+            }
+        } catch (error) {
+            setStatus('error');
+            setMessage('Network error.');
+            setTimeout(() => setStatus('idle'), 5000);
+        }
+    };
+
+    return (
+        <form className="newsletter-form" onSubmit={handleSubscribe}>
+            <input
+                type="email"
+                placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={status === 'loading'}
+            />
+            <button
+                type="submit"
+                className={`btn btn-red ${status === 'loading' ? 'loading' : ''}`}
+                disabled={status === 'loading'}
+            >
+                {status === 'loading' ? 'Sending...' : 'Keep Me Updated'}
+            </button>
+            {status === 'success' && <div className="events-newsletter-feedback success">{message}</div>}
+            {status === 'error' && <div className="events-newsletter-feedback error">{message}</div>}
+        </form>
     );
 };
 

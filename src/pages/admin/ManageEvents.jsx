@@ -609,11 +609,11 @@ const ManageEvents = () => {
                             ></textarea>
                         </div>
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Highlights (One per line)</label>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Highlights (separate each with *)</label>
                             <textarea
                                 name="highlights"
                                 rows="4"
-                                placeholder="• Prophetic Teachings&#10;• Intense Worship..."
+                                placeholder="Prophetic Teachings * Intense Worship * Prayer & Intercession"
                                 className="admin-input"
                                 value={formData.highlights}
                                 onChange={handleInputChange}
@@ -658,7 +658,7 @@ const ManageEvents = () => {
                 title={responseModal.title}
                 message={responseModal.message}
             />
-        </AdminLayout>
+        </AdminLayout >
 
     );
 };

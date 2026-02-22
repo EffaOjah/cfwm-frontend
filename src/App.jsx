@@ -33,6 +33,7 @@ import ManageStore from './pages/admin/ManageStore';
 import ManageLocations from './pages/admin/ManageLocations';
 import ManageForms from './pages/admin/ManageForms';
 import ManageSettings from './pages/admin/ManageSettings';
+import ManageSubscribers from './pages/admin/ManageSubscribers';
 
 function App() {
   const location = useLocation();
@@ -76,6 +77,7 @@ function App() {
         <Route path="/admin/locations" element={<ManageLocations />} />
         <Route path="/admin/forms" element={<ManageForms />} />
         <Route path="/admin/settings" element={<ManageSettings />} />
+        <Route path="/admin/subscribers" element={<ManageSubscribers />} />
       </Routes>
 
       {!isNoNavRoute && <Footer />}

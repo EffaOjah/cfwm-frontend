@@ -10,6 +10,7 @@ import {
     Settings,
     LogOut,
     User,
+    Users,
     X
 } from 'lucide-react';
 import logoImg from '../../assets/logo-main.png';
@@ -25,6 +26,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'Store', path: '/admin/store', icon: <ShoppingBag size={20} /> },
         { name: 'Locations', path: '/admin/locations', icon: <MapPin size={20} /> },
         { name: 'Forms', path: '/admin/forms', icon: <FileText size={20} /> },
+        { name: 'Subscribers', path: '/admin/subscribers', icon: <Users size={20} /> },
     ];
 
     return (
