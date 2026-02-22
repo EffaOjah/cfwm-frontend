@@ -112,7 +112,17 @@
 
 .newsletter-form {
     display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.newsletter-form input,
+.newsletter-form button {
+    width: 100%;
+}
+
+.newsletter-form button {
+    justify-content: center;
 }
 
 .newsletter-form input {

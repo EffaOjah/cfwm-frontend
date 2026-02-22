@@ -108,10 +108,18 @@
 }
 
 .mission-card p,
-.vision-card p {
+.vision-card p,
+.mission-card li,
+.vision-card li {
     color: var(--color-secondary);
     font-size: 0.95rem;
     line-height: 1.6;
+}
+
+.mission-card ul,
+.vision-card ul {
+    margin-top: 0.75rem;
+    padding-left: 1.25rem;
 }
 
 /* Story Section */

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Quote, Calendar, Globe, Award, Heart, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Quote, Calendar, Globe, Award, Heart, ChevronRight, X, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import goHeroImg from '../assets/overseer-hero.png';
 import goIntroImg from '../assets/overseer-intro.png';
@@ -9,9 +9,21 @@ import gallery3 from '../assets/gallery-3.png';
 import './Biography.css';
 
 const Biography = () => {
+    const [selectedImgIndex, setSelectedImgIndex] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    useEffect(() => {
+        if (isModalOpen) {
+            document.body.classList.add('body-no-scroll');
+        } else {
+            document.body.classList.remove('body-no-scroll');
+        }
+        return () => document.body.classList.remove('body-no-scroll');
+    }, [isModalOpen]);
 
     const timelineData = [
         {
@@ -42,19 +54,31 @@ const Biography = () => {
     ];
 
     const galleryData = [
-        {
-            img: gallery1,
-            caption: "At the 2023 Global Champions Conference"
-        },
-        {
-            img: gallery2,
-            caption: "Speaking at a National Youth Summit"
-        },
-        {
-            img: gallery3,
-            caption: "Leading a Night of Atmospheric Prayer"
-        }
+        { img: gallery1, caption: "At the 2023 Global Champions Conference" },
+        { img: gallery2, caption: "Speaking at a National Youth Summit" },
+        { img: gallery3, caption: "Leading a Night of Atmospheric Prayer" },
+        { img: gallery1, caption: "Global Champions - Session 2" },
+        { img: gallery2, caption: "Ministrations in the UK" }
     ];
+
+    const openModal = (index) => {
+        setSelectedImgIndex(index);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const nextImage = (e) => {
+        e.stopPropagation();
+        setSelectedImgIndex((prev) => (prev + 1) % galleryData.length);
+    };
+
+    const prevImage = (e) => {
+        e.stopPropagation();
+        setSelectedImgIndex((prev) => (prev - 1 + galleryData.length) % galleryData.length);
+    };
 
     return (
         <div className="biography-page">
@@ -141,21 +165,57 @@ const Biography = () => {
             {/* Visual Moments Gallery */}
             <section className="bio-gallery-section">
                 <div className="container">
-                    <div className="section-header" data-aos="fade-up">
+                    <div className="section-header text-center" data-aos="fade-up">
                         <h2 className="section-title">Ministry <span className="text-highlight">Gallery</span></h2>
                         <p>Captured moments of grace, worship, and transformation.</p>
                     </div>
 
                     <div className="bio-gallery-grid">
-                        {galleryData.map((item, index) => (
-                            <div className="gallery-item" key={index} data-aos="zoom-in" data-aos-delay={index * 100}>
+                        {galleryData.slice(0, 3).map((item, index) => (
+                            <div
+                                className="gallery-item"
+                                key={index}
+                                data-aos="zoom-in"
+                                data-aos-delay={index * 100}
+                                onClick={() => openModal(index)}
+                            >
                                 <img src={item.img} alt={item.caption} />
+                                {index === 2 && galleryData.length > 3 && (
+                                    <div className="view-more-overlay">
+                                        <span>+{galleryData.length - 2}</span>
+                                    </div>
+                                )}
                                 <div className="gallery-overlay">
                                     <p>{item.caption}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
+
+                    {/* Gallery Lightbox Modal */}
+                    {isModalOpen && (
+                        <div className="gallery-modal-overlay" onClick={closeModal}>
+                            <button className="modal-close" onClick={closeModal}>
+                                <X size={32} />
+                            </button>
+
+                            <button className="nav-btn prev" onClick={prevImage}>
+                                <ChevronLeft size={48} />
+                            </button>
+
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <img src={galleryData[selectedImgIndex].img} alt="Gallery Focus" />
+                                <div className="modal-caption">
+                                    <p>{galleryData[selectedImgIndex].caption}</p>
+                                    <span className="image-counter">{selectedImgIndex + 1} / {galleryData.length}</span>
+                                </div>
+                            </div>
+
+                            <button className="nav-btn next" onClick={nextImage}>
+                                <ChevronRight size={48} />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </section>
 

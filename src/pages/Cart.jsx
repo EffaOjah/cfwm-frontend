@@ -32,8 +32,12 @@ const Cart = () => {
                     <div className="cart-items">
                         {cartItems.map(item => (
                             <div key={item.id} className="cart-item">
-                                <div className="cart-item-image" style={{ background: item.color || '#e2e8f0' }}>
-                                    {/* Placeholder for item image if available */}
+                                <div className="cart-item-image">
+                                    {item.image ? (
+                                        <img src={item.image} alt={item.title} className="cart-item-img" />
+                                    ) : (
+                                        <div className="cart-item-placeholder" style={{ background: item.color || '#e2e8f0' }}></div>
+                                    )}
                                 </div>
 
                                 <div className="cart-item-details">

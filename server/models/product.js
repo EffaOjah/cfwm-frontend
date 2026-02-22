@@ -39,6 +39,9 @@ const Product = {
             image_url, file_url, stock_quantity, is_digital, rating
         } = productData;
 
+        // Normalize boolean
+        const normalizedDigital = (is_digital === 'true' || is_digital === true || is_digital === 1 || is_digital === '1') ? 1 : 0;
+
         await pool.query(
             `INSERT INTO products (
                 id, title, author, description, price, category, status,
@@ -47,7 +50,7 @@ const Product = {
             [
                 id, title, author, description, price, category, status || 'published',
                 image_url, file_url, stock_quantity || 0,
-                is_digital !== undefined ? is_digital : true,
+                normalizedDigital,
                 rating || 5.00
             ]
         );
@@ -60,6 +63,9 @@ const Product = {
             image_url, file_url, stock_quantity, is_digital, rating
         } = productData;
 
+        // Normalize boolean
+        const normalizedDigital = (is_digital === 'true' || is_digital === true || is_digital === 1 || is_digital === '1') ? 1 : 0;
+
         await pool.query(
             `UPDATE products SET 
                 title = ?, author = ?, description = ?, price = ?, category = ?, status = ?,
@@ -67,7 +73,7 @@ const Product = {
             WHERE id = ?`,
             [
                 title, author, description, price, category, status,
-                image_url, file_url, stock_quantity, is_digital, rating, id
+                image_url, file_url, stock_quantity, normalizedDigital, rating, id
             ]
         );
     },

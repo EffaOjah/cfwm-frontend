@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import pastorImg from '../../assets/welcome-pastor.jpg';
+import experienceGodImg from '../../assets/experience-god.jpg';
 import './WelcomeSection.css';
 
 const WelcomeSection = () => {
@@ -9,8 +9,8 @@ const WelcomeSection = () => {
             <div className="container welcome-grid">
                 <div className="welcome-image-col" data-aos="fade-right">
                     <img
-                        src={pastorImg}
-                        alt="Pastor Welcome"
+                        src={experienceGodImg}
+                        alt="Experience God"
                         className="pastor-img"
                     />
                     <div className="dot-pattern"></div>

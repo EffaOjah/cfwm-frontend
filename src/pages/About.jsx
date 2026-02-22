@@ -40,7 +40,7 @@ const About = () => {
                                 Every believer is commissioned and called - The Great Commission and the Holy Calling.
                             </p>
                             <p style={{ marginTop: '1rem', fontWeight: '600' }}>Every believer has three priestly ministries:</p>
-                            <ul style={{ marginTop: '0.75rem', paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                            <ul>
                                 <li>To minister to the Lord in prayer, praise, and worship.</li>
                                 <li>To minister to one another in loving relational, financial and spiritual support.</li>
                                 <li>To minister to the world (unbelievers) by healing the physically and emotionally sick, casting demons and telling them the good news (1 Cor 15:1-4; Mk 16:15-16).</li>

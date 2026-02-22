@@ -20,10 +20,14 @@ const FirstTimer = {
     create: async (data) => {
         const id = crypto.randomUUID();
         const { full_name, phone, email, address, how_heard, wants_visit } = data;
+
+        // Normalize boolean
+        const normalizedVisit = (wants_visit === 'true' || wants_visit === true || wants_visit === 1 || wants_visit === '1') ? 1 : 0;
+
         await pool.query(
             `INSERT INTO first_timers (id, full_name, phone, email, address, how_heard, wants_visit, status) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, full_name, phone, email, address, how_heard, wants_visit || false, 'Pending']
+            [id, full_name, phone, email, address, how_heard, normalizedVisit, 'Pending']
         );
         return id;
     },

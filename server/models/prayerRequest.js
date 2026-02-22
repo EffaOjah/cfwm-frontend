@@ -20,10 +20,14 @@ const PrayerRequest = {
     create: async (data) => {
         const id = crypto.randomUUID();
         const { name, phone, topic, request_details, is_confidential } = data;
+
+        // Normalize boolean
+        const normalizedConfidential = (is_confidential === 'true' || is_confidential === true || is_confidential === 1 || is_confidential === '1') ? 1 : 0;
+
         await pool.query(
             `INSERT INTO prayer_requests (id, name, phone, topic, request_details, is_confidential, status) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [id, name, phone, topic, request_details, is_confidential || false, 'Pending']
+            [id, name, phone, topic, request_details, normalizedConfidential, 'Pending']
         );
         return id;
     },

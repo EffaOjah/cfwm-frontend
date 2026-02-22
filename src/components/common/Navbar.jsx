@@ -8,6 +8,7 @@ import './Navbar.css';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+  const [isChurchOpen, setIsChurchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { cartCount } = useCart();
   const location = useLocation();
@@ -31,6 +32,15 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('body-no-scroll');
+    } else {
+      document.body.classList.remove('body-no-scroll');
+    }
+    return () => document.body.classList.remove('body-no-scroll');
+  }, [isOpen]);
 
   return (
     <nav className={`navbar ${isLightNav ? 'navbar-light' : ''} ${isScrolled ? 'scrolled' : ''} ${isDarkTextNav && !isScrolled ? 'navbar-dark-text' : ''}`}>
@@ -94,11 +104,18 @@ const Navbar = () => {
           <Link to="/livestream" className={location.pathname === '/livestream' ? 'active' : ''} onClick={() => setIsOpen(false)}>LIVESTREAM</Link>
           <Link to="/give" className={location.pathname === '/give' ? 'active' : ''} onClick={() => setIsOpen(false)}>GIVE</Link>
           <div className="mobile-nav-item">
-            <Link to="/about" className={`mobile-nav-link ${location.pathname.startsWith('/about') ? 'active' : ''}`} onClick={() => setIsOpen(false)}>THE CHURCH</Link>
-            <div className="mobile-submenu" style={{ paddingLeft: '1.5rem', marginTop: '-0.5rem' }}>
-              <Link to="/about" className={location.pathname === '/about' ? 'active' : ''} onClick={() => setIsOpen(false)}>About Us</Link>
-              <Link to="/about/overseer" className={location.pathname === '/about/overseer' ? 'active' : ''} onClick={() => setIsOpen(false)}>General Overseer</Link>
-            </div>
+            <button
+              className={`mobile-nav-link ${location.pathname.startsWith('/about') ? 'active' : ''}`}
+              onClick={() => setIsChurchOpen(!isChurchOpen)}
+            >
+              THE CHURCH <ChevronDown size={16} style={{ transform: isChurchOpen ? 'rotate(180deg)' : 'none', transition: '0.3s' }} />
+            </button>
+            {isChurchOpen && (
+              <div className="mobile-submenu">
+                <Link to="/about" className={location.pathname === '/about' ? 'active' : ''} onClick={() => setIsOpen(false)}>About Us</Link>
+                <Link to="/about/overseer" className={location.pathname === '/about/overseer' ? 'active' : ''} onClick={() => setIsOpen(false)}>General Overseer</Link>
+              </div>
+            )}
           </div>
           <Link to="/store" className={location.pathname === '/store' ? 'active' : ''} onClick={() => setIsOpen(false)}>STORE</Link>
 

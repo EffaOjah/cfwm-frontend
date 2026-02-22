@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Play, Clock, MessageCircle, Heart, Share2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import './Livestream.css';
 import placeholderBg from '../assets/livestream-bg.png';
@@ -45,7 +46,9 @@ const Livestream = () => {
 
     // Auto-scroll to bottom of chat
     useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messages.length > 0) {
+            chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
     }, [messages]);
 
     useEffect(() => {
@@ -60,6 +63,27 @@ const Livestream = () => {
         }, 1000);
         return () => clearInterval(timer);
     }, []);
+
+    // Load Facebook SDK
+    useEffect(() => {
+        if (isLive) {
+            // Check if script already exists
+            if (!document.getElementById('facebook-jssdk')) {
+                const script = document.createElement('script');
+                script.id = 'facebook-jssdk';
+                script.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v25.0";
+                script.async = true;
+                script.defer = true;
+                script.crossOrigin = "anonymous";
+                document.body.appendChild(script);
+            }
+
+            // Re-parse XFBML when isLive changes or component mounts
+            if (window.FB) {
+                window.FB.XFBML.parse();
+            }
+        }
+    }, [isLive]);
 
     const handleSendMessage = (e) => {
         e.preventDefault();
@@ -136,16 +160,21 @@ const Livestream = () => {
                         <div className={`video-placeholder ${isLive ? 'live-mode' : ''}`}>
                             {isLive ? (
                                 <div className="iframe-container">
-                                    <iframe
-                                        width="560"
-                                        height="315"
-                                        src="https://www.youtube.com/embed/vqIMoC957ic?si=069qxTorSpaxhaEF"
-                                        title="YouTube video player"
-                                        frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        referrerPolicy="strict-origin-when-cross-origin"
-                                        allowFullScreen
-                                    ></iframe>
+                                    <div id="fb-root"></div>
+                                    <div
+                                        className="fb-video"
+                                        data-href="https://www.facebook.com/CFWMinternational/videos/1504505904339595/"
+                                        data-width="auto"
+                                        data-show-text="false"
+                                        data-autoplay="true"
+                                        data-allowfullscreen="true"
+                                    >
+                                        <blockquote cite="https://www.facebook.com/CFWMinternational/videos/1504505904339595/" className="fb-xfbml-parse-ignore">
+                                            <a href="https://www.facebook.com/CFWMinternational/videos/1504505904339595/">CHRIST FOR THE WORLD MISSION INC.</a>
+                                            <p>SUNDAY SERVICE | 22ND FEBRUARY 2026</p>
+                                            Posted by <a href="https://www.facebook.com/CFWMinternational">Christ For The World Mission International</a> on Saturday, February 21, 2026
+                                        </blockquote>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="offline-status">
@@ -185,7 +214,7 @@ const Livestream = () => {
 
                         <div className="stream-info-bar">
                             <div className="stream-title">
-                                <h2>Sunday Celebration Service</h2>
+                                <h2>SUNDAY SERVICE | 22ND FEBRUARY 2026</h2>
                                 <span className="viewers">
                                     {isLive ? <span style={{ color: '#ef4444', fontWeight: 'bold' }}>● LIVE NOW</span> : 'Waiting for broadcast...'}
                                 </span>
@@ -234,21 +263,21 @@ const Livestream = () => {
             <section className="actions-grid">
                 <div className="container">
                     <div className="grid-layout">
-                        <div className="action-card give-card" data-aos="fade-up">
+                        <Link to="/give" className="action-card give-card" data-aos="fade-up">
                             <h3>Give Online</h3>
                             <p>Support the gospel and make an impact.</p>
-                            <button className="btn-link">Give Now &rarr;</button>
-                        </div>
-                        <div className="action-card connect-card" data-aos="fade-up" data-aos-delay="100">
+                            <span className="btn-link">Give Now &rarr;</span>
+                        </Link>
+                        <Link to="/resources/forms" className="action-card connect-card" data-aos="fade-up" data-aos-delay="100">
                             <h3>Connect Card</h3>
                             <p>New here? We'd love to meet you.</p>
-                            <button className="btn-link">Fill Card &rarr;</button>
-                        </div>
-                        <div className="action-card prayer-card" data-aos="fade-up" data-aos-delay="200">
+                            <span className="btn-link">Fill Card &rarr;</span>
+                        </Link>
+                        <Link to="/resources/forms" className="action-card prayer-card" data-aos="fade-up" data-aos-delay="200">
                             <h3>Prayer Request</h3>
                             <p>How can we pray for you today?</p>
-                            <button className="btn-link">Request Prayer &rarr;</button>
-                        </div>
+                            <span className="btn-link">Request Prayer &rarr;</span>
+                        </Link>
                     </div>
                 </div>
             </section>

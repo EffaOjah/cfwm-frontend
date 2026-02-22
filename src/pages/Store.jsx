@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ShoppingCart, Filter, Book, Headphones, Star, ChevronRight, ChevronLeft, Plus } from 'lucide-react';
+import { ShoppingCart, Filter, Book, Headphones, Star, ChevronRight, ChevronLeft, Plus, Search } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import './Store.css';
@@ -23,6 +23,7 @@ const Store = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
     const { addToCart, currency, setCurrency, formatPrice } = useCart();
     const scrollContainerRef = useRef(null);
     const [scrollStatus, setScrollStatus] = useState({ left: false, right: true });
@@ -74,21 +75,30 @@ const Store = () => {
 
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
-            if (filter === 'all') return true;
+            // Apply Category Filter
+            let matchesCategory = true;
+            if (filter !== 'all') {
+                const prodCat = (p.category || '').toLowerCase();
+                const filterVal = filter.toLowerCase();
 
-            const prodCat = (p.category || '').toLowerCase();
-            const filterVal = filter.toLowerCase();
-
-            if (filterVal === 'audio') {
-                return prodCat === 'audio' || prodCat === 'audiobook' || prodCat === 'audiobooks';
+                if (filterVal === 'audio') {
+                    matchesCategory = prodCat === 'audio' || prodCat === 'audiobook' || prodCat === 'audiobooks';
+                } else if (filterVal === 'book') {
+                    matchesCategory = prodCat === 'book' || prodCat === 'books';
+                } else {
+                    matchesCategory = prodCat === filterVal;
+                }
             }
-            if (filterVal === 'book') {
-                return prodCat === 'book' || prodCat === 'books';
-            }
 
-            return prodCat === filterVal;
+            // Apply Search Filter
+            const matchesSearch =
+                (p.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (p.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (p.author || '').toLowerCase().includes(searchQuery.toLowerCase());
+
+            return matchesCategory && matchesSearch;
         });
-    }, [products, filter]);
+    }, [products, filter, searchQuery]);
 
     const handleAddToCart = (product) => {
         // Map backend product data to cart format if necessary
@@ -112,6 +122,17 @@ const Store = () => {
                     <p data-aos="fade-up" data-aos-delay="100">
                         Resources to help you grow in faith, knowledge, and spiritual power.
                     </p>
+
+                    {/* Search Bar */}
+                    <div className="search-bar" data-aos="fade-up" data-aos-delay="200">
+                        <Search size={20} className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Search products by title, author or description..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                 </div>
             </section>
 
@@ -201,13 +222,20 @@ const Store = () => {
                             ) : (
                                 filteredProducts.map((product, index) => (
                                     <div className="product-card" key={product.id} data-aos="fade-up" data-aos-delay={(index % 4) * 50}>
-                                        <div className="product-cover" style={{ background: typeToGradient(product.category, product.title) }}>
-                                            <div className="cover-content">
-                                                <h3>{product.title}</h3>
-                                                <span>{product.author}</span>
-                                            </div>
+                                        <div
+                                            className={`product-cover ${product.image_url ? 'has-image' : ''}`}
+                                            style={{ background: !product.image_url ? typeToGradient(product.category, product.title) : 'var(--color-bg-dark)' }}
+                                        >
+                                            {product.image_url ? (
+                                                <img src={product.image_url} alt={product.title} className="product-image" />
+                                            ) : (
+                                                <div className="cover-content">
+                                                    <h3>{product.title}</h3>
+                                                    <span>{product.author}</span>
+                                                </div>
+                                            )}
                                             <div className="product-type-badge">
-                                                {product.category === 'book' ? <Book size={14} /> : <Headphones size={14} />}
+                                                {product.category?.toLowerCase().includes('book') ? <Book size={14} /> : <Headphones size={14} />}
                                             </div>
                                         </div>
                                         <div className="product-details">

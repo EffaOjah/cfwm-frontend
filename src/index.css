@@ -153,6 +153,10 @@ video {
   text-align: center;
 }
 
+.body-no-scroll {
+  overflow: hidden;
+}
+
 .flex {
   display: flex;
 }

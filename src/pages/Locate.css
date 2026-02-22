@@ -163,7 +163,8 @@
 
 .info-content h4 {
     font-size: 0.8rem;
-    color: var(--color-text-muted);
+    color: #475569;
+    /* Darker slate for better visibility */
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 0.25rem;
@@ -234,7 +235,8 @@
 
 .district-head {
     font-size: 0.9rem;
-    color: var(--color-text-muted);
+    color: #475569;
+    /* Darker slate for better visibility */
     background: var(--color-bg-light);
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -307,7 +309,8 @@
     gap: 1rem;
     margin-bottom: 1rem;
     font-size: 1rem;
-    color: var(--color-text-muted);
+    color: #475569;
+    /* Darker slate for better visibility */
     line-height: 1.5;
     font-family: var(--font-body);
 }
@@ -344,6 +347,55 @@
 .branch-btn:hover {
     background: #cc121a;
     box-shadow: 0 5px 15px rgba(234, 28, 36, 0.3);
+}
+
+/* Loading & Error States */
+.locate-loading,
+.locate-error {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.locate-loading p {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.locate-error {
+    color: #b91c1c;
+}
+
+.locate-error h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.locate-error p {
+    color: #ef4444;
+    max-width: 400px;
+    margin-bottom: 1.5rem;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+    color: var(--color-brand-red);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Responsive */

@@ -249,7 +249,13 @@ const Checkout = () => {
                                 <div className="summary-items">
                                     {cartItems.map(item => (
                                         <div key={item.id} className="summary-item">
-                                            <div className="item-thumb" style={{ background: item.color }}></div>
+                                            <div className="item-thumb">
+                                                {item.image ? (
+                                                    <img src={item.image} alt={item.title} className="item-thumb-img" />
+                                                ) : (
+                                                    <div className="item-thumb-placeholder" style={{ background: item.color || '#e2e8f0' }}></div>
+                                                )}
+                                            </div>
                                             <div className="item-info">
                                                 <h4>{item.title}</h4>
                                                 <span>Qty: {item.quantity}</span>
