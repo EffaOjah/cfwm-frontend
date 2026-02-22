@@ -2,6 +2,8 @@
 
 .apapro-page {
     background-color: var(--color-bg-light);
+    color: var(--color-text-dark);
+    /* Ensure base text is dark */
     min-height: 100vh;
     padding-bottom: 5rem;
 }
@@ -108,7 +110,6 @@
     color: var(--color-brand-red);
     font-weight: 600;
     margin-bottom: 2.5rem;
-    opacity: 0.8;
 }
 
 .quote-section {
@@ -125,7 +126,8 @@
     text-transform: uppercase;
     letter-spacing: 2px;
     font-weight: 800;
-    color: var(--color-text-muted);
+    color: #475569 !important;
+    /* Darker slate for better visibility in light mode */
     margin-bottom: 1rem;
 }
 
@@ -140,7 +142,7 @@
 .quote-text {
     font-size: 1.5rem;
     font-style: italic;
-    color: var(--color-text-dark);
+    color: inherit;
     font-family: var(--font-heading);
     line-height: 1.4;
     position: relative;
@@ -542,7 +544,7 @@
 .apapro-page.theme-sepia .quote-text,
 .apapro-page.theme-sepia .scripture-text,
 .apapro-page.theme-sepia .devotional-body {
-    color: #433422;
+    color: #433422 !important;
 }
 
 .apapro-page.theme-night {
@@ -568,7 +570,7 @@
 .apapro-page.theme-night .guidance-text,
 .apapro-page.theme-night .study-text,
 .apapro-page.theme-night .footer-item li {
-    color: #f1f5f9;
+    color: #f1f5f9 !important;
     /* Near white for main readability */
 }
 
@@ -831,4 +833,338 @@
     .declaration-text {
         font-size: 1.5rem;
     }
+}
+
+/* Future dates — no content yet (date-gate) */
+.calendar-day.future-locked {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.calendar-day.future-locked:hover {
+    background: transparent;
+    color: var(--color-text-dark);
+}
+
+/* Loading Spinner for Content Fetches */
+.loading-spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(204, 18, 26, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--color-brand-red);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+
+    /* Hide ONLY true website UI elements */
+    .navbar,
+    .apapro-hero,
+    .apapro-sidebar,
+    .theme-switcher,
+    footer,
+    .btn-notification,
+    .focus-mode-toggle,
+    .apapro-actions-nav {
+        display: none !important;
+    }
+
+    .apapro-page {
+        background: white !important;
+        padding: 0 !important;
+        color: black !important;
+    }
+
+    /* Ensure the main grid doesn't have sidebar spacing */
+    .apapro-content-grid {
+        display: block !important;
+        margin-top: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Card styling for paper */
+    .devotional-card {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        background: transparent !important;
+    }
+
+    /* Keep the Prophetic/Confession boxes side-by-side if possible or stacked neatly */
+    .spiritual-guidance {
+        display: flex !important;
+        gap: 20px !important;
+        margin-top: 2rem !important;
+    }
+
+    .guidance-card {
+        flex: 1 !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Keep footer items (Study, Plan) visible */
+    .devotional-footer-items {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 20px !important;
+        border-top: 1px solid #eee !important;
+        padding-top: 1.5rem !important;
+        margin-top: 2rem !important;
+    }
+
+    /* MONTHLY DECLARATION BANNER */
+    .declaration-banner {
+        display: block !important;
+        background-color: var(--color-brand-red) !important;
+        color: white !important;
+        padding: 2rem !important;
+        margin-top: 3rem !important;
+        border-radius: 12px !important;
+        text-align: center !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .declaration-text {
+        color: white !important;
+        font-size: 1.8rem !important;
+    }
+
+    /* Typography */
+    .devotional-title {
+        font-size: 2.5rem !important;
+        color: black !important;
+    }
+
+    .quote-section {
+        background: #f8fafc !important;
+        border-left: 6px solid var(--color-brand-red) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .scripture-box {
+        border: 2px dashed var(--color-brand-red) !important;
+        background: transparent !important;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}
+
+/* Utilities for Apapro Page */
+.apapro-page.theme-light {
+    color: #1e293b !important;
+}
+
+.apapro-page.theme-light .quote-text {
+    color: #1e293b !important;
+}
+
+.apapro-page .bg-brand-red {
+    background-color: var(--color-brand-red) !important;
+}
+
+.apapro-page .text-white {
+    color: #ffffff !important;
+}
+
+.apapro-page .w-100 {
+    width: 100%;
+}
+
+.apapro-page .btn-white-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.apapro-page .btn-white-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+/* Share Dropdown Styling */
+.share-dropdown {
+    animation: fadeInScale 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top right;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.share-item {
+    width: 100%;
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #475569;
+    background: transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: block;
+}
+
+.share-item:hover {
+    background: #f1f5f9;
+    color: var(--color-brand-red);
+}
+
+/* Theme Overrides for Share Dropdown */
+.theme-night .share-dropdown {
+    background: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-night .share-item {
+    color: #f1f5f9;
+}
+
+.theme-night .share-item:hover {
+    background: #334155;
+}
+
+.theme-sepia .share-dropdown {
+    background: #f4ecd8 !important;
+    border-color: #e2d1a6 !important;
+}
+
+.theme-sepia .share-item {
+    color: #433422;
+}
+
+.theme-sepia .share-item:hover {
+    background: #e2d1a6;
+}
+
+/* Search Bar Refinement */
+.search-widget .widget-title {
+    margin-bottom: 1.5rem;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.search-icon-inside {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+.search-input {
+    width: 100% !important;
+    padding: 0.75rem 2.5rem 0.75rem 2.5rem !important;
+    /* Space for icon and clear btn */
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    font-size: 0.9rem !important;
+    color: #1e293b !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    outline: none !important;
+}
+
+.search-input:focus {
+    border-color: var(--color-brand-red) !important;
+    background: white !important;
+    box-shadow: 0 0 0 4px rgba(234, 28, 36, 0.1) !important;
+}
+
+.search-input:focus+.search-icon-inside {
+    color: var(--color-brand-red);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 10px;
+    background: #cbd5e1;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    padding: 0;
+}
+
+.search-clear-btn:hover {
+    background: #94a3b8;
+    transform: scale(1.1);
+}
+
+/* Theme Overrides for Search */
+.theme-night .search-input {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+.theme-night .search-input:focus {
+    background: #0f172a !important;
+    border-color: var(--color-brand-red) !important;
+}
+
+.theme-sepia .search-input {
+    background: #f4ecd8 !important;
+    border-color: #e2d1a6 !important;
+    color: #433422 !important;
+}
+
+.theme-sepia .search-input:focus {
+    background: white !important;
+}
+
+.nav-icon-btn.active {
+    color: var(--color-brand-red);
+    background: rgba(234, 28, 36, 0.05);
 }

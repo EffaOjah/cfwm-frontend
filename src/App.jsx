@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
@@ -34,12 +34,24 @@ import ManageLocations from './pages/admin/ManageLocations';
 import ManageForms from './pages/admin/ManageForms';
 import ManageSettings from './pages/admin/ManageSettings';
 import ManageSubscribers from './pages/admin/ManageSubscribers';
+import ManageApapro from './pages/admin/ManageApapro';
+import Login from './pages/admin/Login';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('cfwm_admin_token');
+  if (!token) {
+    return <Navigate to="/admin/login" replace />;
+  }
+  return children;
+};
 
 function App() {
   const location = useLocation();
   const isVmixRoute = location.pathname.startsWith('/vmix');
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const isNoNavRoute = isVmixRoute || isAdminRoute;
+  const isLoginRoute = location.pathname === '/admin/login';
+  const isNoNavRoute = isVmixRoute || isAdminRoute || isLoginRoute;
 
   return (
     <div className={`app-container ${isVmixRoute ? 'vmix-mode' : ''} ${isAdminRoute ? 'admin-mode' : ''}`}>
@@ -69,15 +81,18 @@ function App() {
         <Route path="/vmix/testimony" element={<VmixTestimony />} />
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/events" element={<ManageEvents />} />
-        <Route path="/admin/testimonies" element={<ManageTestimonies />} />
-        <Route path="/admin/sermons" element={<ManageSermons />} />
-        <Route path="/admin/store" element={<ManageStore />} />
-        <Route path="/admin/locations" element={<ManageLocations />} />
-        <Route path="/admin/forms" element={<ManageForms />} />
-        <Route path="/admin/settings" element={<ManageSettings />} />
-        <Route path="/admin/subscribers" element={<ManageSubscribers />} />
+        <Route path="/admin/login" element={<Login />} />
+
+        <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/events" element={<ProtectedRoute><ManageEvents /></ProtectedRoute>} />
+        <Route path="/admin/testimonies" element={<ProtectedRoute><ManageTestimonies /></ProtectedRoute>} />
+        <Route path="/admin/sermons" element={<ProtectedRoute><ManageSermons /></ProtectedRoute>} />
+        <Route path="/admin/store" element={<ProtectedRoute><ManageStore /></ProtectedRoute>} />
+        <Route path="/admin/locations" element={<ProtectedRoute><ManageLocations /></ProtectedRoute>} />
+        <Route path="/admin/forms" element={<ProtectedRoute><ManageForms /></ProtectedRoute>} />
+        <Route path="/admin/settings" element={<ProtectedRoute><ManageSettings /></ProtectedRoute>} />
+        <Route path="/admin/subscribers" element={<ProtectedRoute><ManageSubscribers /></ProtectedRoute>} />
+        <Route path="/admin/apapro" element={<ProtectedRoute><ManageApapro /></ProtectedRoute>} />
       </Routes>
 
       {!isNoNavRoute && <Footer />}

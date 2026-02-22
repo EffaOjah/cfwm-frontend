@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Calendar,
@@ -11,12 +11,22 @@ import {
     LogOut,
     User,
     Users,
-    X
+    X,
+    Flame
 } from 'lucide-react';
 import logoImg from '../../assets/logo-main.png';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const adminUser = JSON.parse(localStorage.getItem('cfwm_admin_user') || '{"name":"Admin User","email":"admin@cfwm.org"}');
+
+    const handleLogout = () => {
+        localStorage.removeItem('cfwm_admin_token');
+        localStorage.removeItem('cfwm_admin_user');
+        navigate('/admin/login');
+    };
 
     const navItems = [
         { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} /> },
@@ -27,6 +37,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'Locations', path: '/admin/locations', icon: <MapPin size={20} /> },
         { name: 'Forms', path: '/admin/forms', icon: <FileText size={20} /> },
         { name: 'Subscribers', path: '/admin/subscribers', icon: <Users size={20} /> },
+        { name: 'Apapro 🔥', path: '/admin/apapro', icon: <Flame size={20} /> },
     ];
 
     return (
@@ -75,10 +86,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <User size={20} />
                     </div>
                     <div style={{ flex: 1, overflow: 'hidden' }}>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 700, margin: 0 }}>Admin User</p>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>admin@cfwm.org</p>
+                        <p style={{ fontSize: '0.85rem', fontWeight: 700, margin: 0 }}>{adminUser.name}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{adminUser.email}</p>
                     </div>
-                    <button style={{ background: 'none', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer' }}>
+                    <button
+                        style={{ background: 'none', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer' }}
+                        onClick={handleLogout}
+                        title="Logout"
+                    >
                         <LogOut size={18} />
                     </button>
                 </div>

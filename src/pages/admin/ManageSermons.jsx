@@ -1,5 +1,6 @@
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
+import { useState, useEffect, useRef } from 'react';
+import { ActionDropdown, AdminModal, AdminLayout, Topbar, ConfirmModal, ResponseModal } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
 import {
     Search,
     MoreVertical,
@@ -15,11 +16,6 @@ import {
     AlertCircle,
     Plus
 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ActionDropdown from '../../components/admin/ActionDropdown';
-import AdminModal from '../../components/admin/AdminModal';
-import ResponseModal from '../../components/admin/ResponseModal';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const ManageSermons = () => {
@@ -93,7 +89,7 @@ const ManageSermons = () => {
             if (filterType !== 'all') queryParams.append('type', filterType);
             if (debouncedSearchTerm) queryParams.append('search', debouncedSearchTerm);
 
-            const response = await fetch(`${API_BASE_URL}/sermons?${queryParams.toString()}`);
+            const response = await adminFetch(`/sermons?${queryParams.toString()}`); // Changed to adminFetch
             if (!response.ok) throw new Error('Failed to fetch sermons');
             const data = await response.json();
             setSermons(data);
@@ -124,7 +120,7 @@ const ManageSermons = () => {
     const confirmDelete = async () => {
         if (!idToDelete) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/sermons/${idToDelete}`, {
+            const response = await adminFetch(`/sermons/${idToDelete}`, {
                 method: 'DELETE'
             });
             if (!response.ok) throw new Error('Failed to delete sermon');
@@ -197,8 +193,8 @@ const ManageSermons = () => {
         e.preventDefault();
         try {
             const url = modalMode === 'create'
-                ? `${API_BASE_URL}/sermons`
-                : `${API_BASE_URL}/sermons/${formData.id}`;
+                ? `/sermons`
+                : `/sermons/${formData.id}`;
 
             const method = modalMode === 'create' ? 'POST' : 'PUT';
 
@@ -215,7 +211,7 @@ const ManageSermons = () => {
                 formDataPayload.append('thumbnail_url', formData.thumbnail_url);
             }
 
-            const response = await fetch(url, {
+            const response = await adminFetch(url, { // Changed to adminFetch
                 method,
                 body: formDataPayload
             });
@@ -341,7 +337,7 @@ const ManageSermons = () => {
                                             </div>
                                         </td>
                                         <td>
-                                            <span className={`admin-status-badge ${sermon.type === 'video' ? 'status-published' : 'status-pending'}`} style={{ fontSize: '0.7rem', fontWeight: 800 }}>
+                                            <span className={`admin - status - badge ${sermon.type === 'video' ? 'status-published' : 'status-pending'} `} style={{ fontSize: '0.7rem', fontWeight: 800 }}>
                                                 {sermon.type.toUpperCase()}
                                             </span>
                                         </td>
@@ -467,7 +463,7 @@ const ManageSermons = () => {
                                     {viewingSermon.title}
                                 </h3>
                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                    <span className={`admin-status-badge ${viewingSermon.type === 'video' ? 'status-published' : 'status-pending'}`}>
+                                    <span className={`admin - status - badge ${viewingSermon.type === 'video' ? 'status-published' : 'status-pending'} `}>
                                         {viewingSermon.type.toUpperCase()}
                                     </span>
                                     <span style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>

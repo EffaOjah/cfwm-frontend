@@ -1,21 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
-import {
-    Search,
-    MoreVertical,
-    Check,
-    X,
-    Trash2,
-    User,
-    Clock,
-    Share2,
-    Eye
-} from 'lucide-react';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ActionDropdown from '../../components/admin/ActionDropdown';
-import AdminModal from '../../components/admin/AdminModal';
-import ResponseModal from '../../components/admin/ResponseModal';
+import { ActionDropdown, AdminLayout, Topbar, ConfirmModal, ResponseModal } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
+import { Search, Trash2, Clock, CheckCircle, XCircle, MoreVertical, MessageSquare, User, Eye, Share2, Check, X } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const ManageTestimonies = () => {
@@ -29,7 +15,7 @@ const ManageTestimonies = () => {
     const [idToDelete, setIdToDelete] = useState(null);
 
     const [activeDropdownId, setActiveDropdownId] = useState(null);
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(null);
     const [viewingTestimony, setViewingTestimony] = useState(null);
 
     // Response Modal State
@@ -51,7 +37,7 @@ const ManageTestimonies = () => {
     const fetchTestimonies = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/testimonies/all`);
+            const response = await adminFetch('/testimonies/all');
             if (!response.ok) throw new Error('Failed to fetch testimonies');
             const data = await response.json();
             setTestimonies(data);
@@ -81,10 +67,10 @@ const ManageTestimonies = () => {
     const confirmDelete = async () => {
         if (!idToDelete) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/testimonies/${idToDelete}`, {
+            const response = await adminFetch(`/testimonies/${idToDelete}`, {
                 method: 'DELETE'
             });
-            if (!response.ok) throw new Error('Failed to delete testimony');
+            if (!response.ok) throw new Error('Failed to remove testimony');
 
             await fetchTestimonies();
             setIsDeleteModalOpen(false);
@@ -97,9 +83,8 @@ const ManageTestimonies = () => {
 
     const handleStatusUpdate = async (testimony, newStatus) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/testimonies/${testimony.id}`, {
+            const response = await adminFetch(`/testimonies/${testimony.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...testimony,
                     status: newStatus

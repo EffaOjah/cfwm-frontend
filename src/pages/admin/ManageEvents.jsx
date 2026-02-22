@@ -1,21 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
-import {
-    Search,
-    MoreVertical,
-    Edit2,
-    Trash2,
-    Calendar,
-    MapPin,
-    Clock,
-    Plus
-} from 'lucide-react';
-import AdminModal from '../../components/admin/AdminModal';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ResponseModal from '../../components/admin/ResponseModal';
-import ActionDropdown from '../../components/admin/ActionDropdown';
-import { ExternalLink, Share2 } from 'lucide-react';
+import { ActionDropdown, AdminModal, AdminLayout, Topbar, ConfirmModal, ResponseModal } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
+import { ExternalLink, Share2, Plus, Search, MoreVertical, Edit2, Trash2, Calendar, MapPin, Clock } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -76,7 +62,7 @@ const ManageEvents = () => {
     const fetchEvents = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/events`);
+            const response = await adminFetch('/events');
             if (!response.ok) throw new Error('Failed to fetch events');
             const data = await response.json();
             // Map backend event_date/time to frontend date/time for UI compatibility
@@ -161,12 +147,11 @@ const ManageEvents = () => {
 
         try {
             const url = editingEventId
-                ? `${API_BASE_URL}/events/${editingEventId}`
-                : `${API_BASE_URL}/events`;
-            const method = editingEventId ? 'PUT' : 'POST';
+                ? `/events/${editingEventId}`
+                : `/events`;
 
-            const response = await fetch(url, {
-                method,
+            const response = await adminFetch(url, {
+                method: editingEventId ? 'PUT' : 'POST',
                 // Do not set Content-Type header for FormData, browser will do it with boundary
                 body: formDataPayload
             });
@@ -198,13 +183,13 @@ const ManageEvents = () => {
     };
 
     const confirmDelete = async () => {
+        setIsDeleteModalOpen(false);
         if (!eventIdToDelete) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/events/${eventIdToDelete}`, {
+            const response = await adminFetch(`/events/${eventIdToDelete}`, {
                 method: 'DELETE'
             });
-
             if (!response.ok) throw new Error('Failed to delete event');
 
             await fetchEvents(); // Refresh list

@@ -1,5 +1,4 @@
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
+import { useState, useRef, useEffect } from 'react';
 import {
     Search,
     MapPin,
@@ -15,11 +14,8 @@ import {
     User,
     Tag
 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import AdminModal from '../../components/admin/AdminModal';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ActionDropdown from '../../components/admin/ActionDropdown';
-import ResponseModal from '../../components/admin/ResponseModal';
+import { ActionDropdown, AdminModal, AdminLayout, Topbar, ConfirmModal, ResponseModal } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -75,15 +71,14 @@ const ManageLocations = () => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/locations/districts`);
-            if (!response.ok) throw new Error('Failed to fetch data');
+            const response = await adminFetch('/locations/districts');
+            if (!response.ok) throw new Error('Failed to fetch districts');
             const data = await response.json();
 
             setDistricts(data);
 
-            // Flatten all branches into one state for easier management if needed, 
-            // though they are currently nested in districts from getDistrictsWithBranches
-            const allBranches = data.flatMap(d => d.branches || []);
+            // Flatten all branches into one state for easier management if needed
+            const allBranches = (data || []).flatMap(d => d.branches || []);
             setBranches(allBranches);
 
             if (data.length > 0 && !selectedDistrictId) {
@@ -124,21 +119,20 @@ const ManageLocations = () => {
     const handleSaveDistrict = async (e) => {
         e.preventDefault();
         try {
-            const url = districtModalMode === 'create'
-                ? `${API_BASE_URL}/locations/districts`
-                : `${API_BASE_URL}/locations/districts/${districtForm.id}`;
+            const url_endpoint = districtModalMode === 'create'
+                ? '/locations/districts'
+                : `/locations/districts/${districtForm.id}`;
             const method = districtModalMode === 'create' ? 'POST' : 'PUT';
 
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: districtForm.name,
-                    head_pastor: districtForm.head_pastor
-                })
-            });
+            const formData = {
+                name: districtForm.name,
+                head_pastor: districtForm.head_pastor
+            };
 
-            if (!response.ok) throw new Error('Failed to save district');
+            await adminFetch(url_endpoint, {
+                method,
+                body: JSON.stringify(formData),
+            });
 
             await fetchData();
             setIsDistrictModalOpen(false);
@@ -207,6 +201,9 @@ const ManageLocations = () => {
 
             const response = await fetch(url, {
                 method,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('cfwm_admin_token')}`
+                },
                 body: formDataPayload
             });
 
@@ -233,7 +230,7 @@ const ManageLocations = () => {
 
         try {
             const endpoint = itemToDelete.type === 'district' ? 'districts' : 'branches';
-            const response = await fetch(`${API_BASE_URL}/locations/${endpoint}/${itemToDelete.id}`, {
+            const response = await adminFetch(`/locations/${endpoint}/${itemToDelete.id}`, {
                 method: 'DELETE'
             });
 

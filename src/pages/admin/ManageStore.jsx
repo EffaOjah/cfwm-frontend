@@ -1,5 +1,5 @@
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
+import { ActionDropdown, AdminModal, AdminLayout, Topbar, ConfirmModal, ResponseModal } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
 import {
     Search,
     Link as LinkIcon,
@@ -22,10 +22,6 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ActionDropdown from '../../components/admin/ActionDropdown';
-import AdminModal from '../../components/admin/AdminModal';
-import ResponseModal from '../../components/admin/ResponseModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -101,8 +97,7 @@ const ManageStore = () => {
             if (filterCategory !== 'all') queryParams.append('category', filterCategory);
             if (debouncedSearchTerm) queryParams.append('search', debouncedSearchTerm);
 
-            const response = await fetch(`${API_BASE_URL}/products?${queryParams.toString()}`);
-            if (!response.ok) throw new Error('Failed to fetch products');
+            const response = await adminFetch(`/products?${queryParams.toString()}`);
             const data = await response.json();
             setProducts(data);
             setError(null);
@@ -132,11 +127,9 @@ const ManageStore = () => {
     const confirmDelete = async () => {
         if (!idToDelete) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/products/${idToDelete}`, {
+            const response = await adminFetch(`/products/${idToDelete}`, {
                 method: 'DELETE'
             });
-
-            if (!response.ok) throw new Error('Failed to delete product');
 
             await fetchProducts();
             setIsDeleteModalOpen(false);
@@ -205,8 +198,8 @@ const ManageStore = () => {
         e.preventDefault();
         try {
             const url = modalMode === 'create'
-                ? `${API_BASE_URL}/products`
-                : `${API_BASE_URL}/products/${formData.id}`;
+                ? `/products`
+                : `/products/${formData.id}`;
 
             const method = modalMode === 'create' ? 'POST' : 'PUT';
 
@@ -223,15 +216,10 @@ const ManageStore = () => {
                 formDataPayload.append('image_url', formData.image_url);
             }
 
-            const response = await fetch(url, {
+            const response = await adminFetch(url, {
                 method,
                 body: formDataPayload
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to save product');
-            }
 
             await fetchProducts();
             handleCloseModal();

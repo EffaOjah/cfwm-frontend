@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
 import './Contact.css';
 
 const Contact = () => {
@@ -9,6 +9,8 @@ const Contact = () => {
         subject: '',
         message: ''
     });
+    const [status, setStatus] = useState(null); // 'success' | 'error' | null
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -21,11 +23,32 @@ const Contact = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Form Submitted:', formData);
-        alert('Thank you for reaching out! We will get back to you soon.');
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        setLoading(true);
+        setStatus(null);
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/contact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                setStatus('success');
+                setFormData({ name: '', email: '', subject: '', message: '' });
+            } else {
+                setStatus('error');
+            }
+        } catch (err) {
+            console.error('Submit error:', err);
+            setStatus('error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -88,6 +111,20 @@ const Contact = () => {
                     {/* Contact Form */}
                     <section className="contact-form-wrapper" data-aos="fade-left">
                         <h2>Send us a Message</h2>
+
+                        {status === 'success' && (
+                            <div className="contact-feedback contact-feedback--success">
+                                <CheckCircle size={20} />
+                                <span>Your message was sent! We'll get back to you soon.</span>
+                            </div>
+                        )}
+                        {status === 'error' && (
+                            <div className="contact-feedback contact-feedback--error">
+                                <AlertCircle size={20} />
+                                <span>Something went wrong. Please try again or email us directly.</span>
+                            </div>
+                        )}
+
                         <form onSubmit={handleSubmit} className="form-grid">
                             <div className="form-group">
                                 <label htmlFor="name">Full Name</label>
@@ -138,8 +175,8 @@ const Contact = () => {
                                 ></textarea>
                             </div>
                             <div className="form-full">
-                                <button type="submit" className="submit-btn">
-                                    Send Message <Send size={18} style={{ marginLeft: '8px', display: 'inline' }} />
+                                <button type="submit" className="submit-btn" disabled={loading}>
+                                    {loading ? 'Sending…' : <>Send Message <Send size={18} style={{ marginLeft: '8px', display: 'inline' }} /></>}
                                 </button>
                             </div>
                         </form>

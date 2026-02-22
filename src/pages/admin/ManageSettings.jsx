@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
+import { AdminLayout, Topbar } from '../../components/admin';
 import { Moon, Sun, Bell, Shield, User, Save, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const ManageSettings = () => {

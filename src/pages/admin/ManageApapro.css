@@ -1,0 +1,141 @@
+/* ManageApapro.css */
+
+.apapro-admin-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.apapro-admin-btn-primary {
+    background: var(--color-brand-red, #cc121a);
+    color: white;
+}
+
+.apapro-admin-btn-primary:hover {
+    background: #b00f16;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(204, 18, 26, 0.3);
+}
+
+.apapro-admin-btn-secondary {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.apapro-admin-btn-secondary:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: translateY(-1px);
+}
+
+/* Action Icons in Table */
+.apapro-action-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.apapro-action-icon-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.apapro-action-icon-btn.edit {
+    color: #3b82f6;
+}
+
+.apapro-action-icon-btn.edit:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+}
+
+.apapro-action-icon-btn.delete {
+    color: #ef4444;
+}
+
+.apapro-action-icon-btn.delete:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+}
+
+.apapro-action-icon-btn.status-toggle.published {
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.apapro-action-icon-btn.status-toggle.published:hover {
+    background: #ecfdf5;
+}
+
+.apapro-action-icon-btn.status-toggle.draft {
+    color: #94a3b8;
+}
+
+.apapro-action-icon-btn.status-toggle.draft:hover {
+    background: #f8fafc;
+}
+
+/* Small add/remove para buttons */
+.apapro-para-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.apapro-para-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.apapro-para-btn.remove {
+    padding: 0.4rem;
+    color: #ef4444;
+    border-color: #fee2e2;
+}
+
+.apapro-para-btn.remove:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+/* Form Styles */
+.apapro-admin-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.apapro-admin-input:focus {
+    outline: none;
+    border-color: var(--color-brand-red, #cc121a);
+    box-shadow: 0 0 0 3px rgba(204, 18, 26, 0.1);
+}

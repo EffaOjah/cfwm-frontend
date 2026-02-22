@@ -1,5 +1,4 @@
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
+import { useState, useRef, useEffect } from 'react';
 import {
     Search,
     UserPlus,
@@ -17,10 +16,8 @@ import {
     AlertCircle,
     FileType
 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import AdminModal from '../../components/admin/AdminModal';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ActionDropdown from '../../components/admin/ActionDropdown';
+import { ActionDropdown, AdminLayout, Topbar, ConfirmModal, ResponseModal } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -47,8 +44,8 @@ const ManageForms = () => {
         setLoading(true);
         try {
             const [ftRes, prRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/forms/first-timers`),
-                fetch(`${API_BASE_URL}/forms/prayer-requests`)
+                adminFetch('/forms/first-timers'),
+                adminFetch('/forms/prayer-requests')
             ]);
 
             if (!ftRes.ok || !prRes.ok) throw new Error('Failed to fetch submissions');
@@ -115,7 +112,7 @@ const ManageForms = () => {
 
         try {
             const endpoint = itemToDelete.type === 'firstTimers' ? 'first-timers' : 'prayer-requests';
-            const response = await fetch(`${API_BASE_URL}/forms/${endpoint}/${itemToDelete.id}`, {
+            const response = await adminFetch(`/forms/${endpoint}/${itemToDelete.id}`, {
                 method: 'DELETE'
             });
 
@@ -144,9 +141,8 @@ const ManageForms = () => {
 
         try {
             const endpoint = activeTab === 'firstTimers' ? 'first-timers' : 'prayer-requests';
-            const response = await fetch(`${API_BASE_URL}/forms/${endpoint}/${id}/status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await adminFetch(`/forms/${endpoint}/${id}/status`, {
+                method: 'PUT',
                 body: JSON.stringify({ status: nextStatus })
             });
 

@@ -1,5 +1,5 @@
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
+import { AdminLayout, Topbar } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
 import {
     Users,
     MessageSquare,
@@ -31,7 +31,7 @@ const AdminDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/stats/overview`);
+                const response = await adminFetch('/stats/overview');
                 if (!response.ok) throw new Error('Failed to fetch dashboard data');
                 const data = await response.json();
                 setDashboardData(data);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import AdminLayout from '../../components/admin/AdminLayout';
-import Topbar from '../../components/admin/Topbar';
+import { ActionDropdown, AdminLayout, Topbar, ConfirmModal, ResponseModal } from '../../components/admin';
+import { adminFetch } from '../../utils/adminFetch';
 import {
     Search,
     Trash2,
@@ -9,9 +9,6 @@ import {
     MoreVertical,
     Download
 } from 'lucide-react';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ResponseModal from '../../components/admin/ResponseModal';
-import ActionDropdown from '../../components/admin/ActionDropdown';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -46,7 +43,7 @@ const ManageSubscribers = () => {
     const fetchSubscribers = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/newsletter/subscribers`);
+            const response = await adminFetch('/newsletter/subscribers');
             if (!response.ok) throw new Error('Failed to fetch subscribers');
             const data = await response.json();
             setSubscribers(data);
@@ -76,7 +73,7 @@ const ManageSubscribers = () => {
     const confirmDelete = async () => {
         if (!idToDelete) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/newsletter/subscriber/${idToDelete}`, {
+            const response = await adminFetch(`/newsletter/subscriber/${idToDelete}`, {
                 method: 'DELETE'
             });
             if (!response.ok) throw new Error('Failed to remove subscriber');
